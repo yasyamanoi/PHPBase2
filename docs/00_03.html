@@ -2,7 +2,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
-<title>PHPBaseドキュメント</title>
+<title>PHPBase2ドキュメント</title>
 </head>
 <body>
 <!-- 全体コンテナ　-->
@@ -551,7 +551,7 @@ $page_obj->display();
 		$dataarr[フィールド名] = (型名)値;
 </pre>
 </div>
-　のように記述します。<strong>PHPBase</strong>ももう一つのサンプルである<strong>メンバー管理</strong>の詳細ページでは、複数フィールドが記述されています。<br>
+　のように記述します。<strong>PHPBase2</strong>ももう一つのサンプルである<strong>メンバー管理</strong>の詳細ページでは、複数フィールドが記述されています。<br>
 　$dataarrへのセットが終わったら、<strong>追加</strong>か<strong>更新</strong>かで分岐します。ここではプライマリキーである<strong>$prefecture_id</strong>が<strong>0より大きい</strong>場合は、<strong>更新</strong>、それ以外は<strong>追加</strong>としています。<br>
 　<strong>更新</strong>の場合は、一覧ページでの<strong>削除</strong>のように
 <div class="box1">
@@ -567,7 +567,7 @@ $page_obj->display();
 </pre>
 </div>
 　のように<strong>$change_obj->update_core()関数</strong>を呼び出します。<br>
-　<strong>$dataarr</strong>については<strong>プレースホルダ</strong>にする必要がありません。<strong>PHPBase内部</strong>で<strong>プレースホルダ化</strong>されます。<br>
+　<strong>$dataarr</strong>については<strong>プレースホルダ</strong>にする必要がありません。<strong>PHPBase2内部</strong>で<strong>プレースホルダ化</strong>されます。<br>
 　そして
 <div class="box1">
 <pre>
@@ -578,7 +578,7 @@ $page_obj->display();
 　そのため同じ詳細ページが表示されます。<br>
 　リダイレクト先は、例えば<strong>ありがとうございます</strong>のようなページの場合もあると思います。<br>
 　それでもかまいませんが、必ず<strong>GETでページの読み直し</strong>をするということです。<strong>POST</strong>の状態だと、ブラウザの更新ボタンで<strong>２重POST</strong>の危険があります。<br>
-　<strong>追加</strong>の場合は、条件がないので<strong>プレースホルダ</strong>は作成する必要がありません。保存するデータは、<strong>PHPBase内部</strong>で<strong>プレースホルダ化</strong>されます。以下が追加用の関数呼び出しです。
+　<strong>追加</strong>の場合は、条件がないので<strong>プレースホルダ</strong>は作成する必要がありません。保存するデータは、<strong>PHPBase2内部</strong>で<strong>プレースホルダ化</strong>されます。以下が追加用の関数呼び出しです。
 <div class="box1">
 <pre>
 			$pid = $change_obj->insert_core(false,'prefecture',$dataarr,false);
@@ -674,17 +674,17 @@ END_BLOCK;
 　その後、<strong>$err_array['prefecture_name']</strong>が存在するかどうかを確認して、存在してれば、エラーメッセージを出力します。
 <h4>４，まとめ</h4>
 　前項の<strong>都道府県一覧</strong>に続いて、この項では<strong>都道府県詳細</strong>ページの説明を行いました。<br>
-　実は、この２つの項で<strong>PHPBase</strong>の多くのことがソース化されています。<br>
-　<strong>PHPBase</strong>にはサンプルとしてもう一つ<strong>メンバー管理</strong>があります。<br>
+　実は、この２つの項で<strong>PHPBase2</strong>の多くのことがソース化されています。<br>
+　<strong>PHPBase2</strong>にはサンプルとしてもう一つ<strong>メンバー管理</strong>があります。<br>
 　そのソースを見ていただくとわかりますが、<strong>メンバー一覧</strong>は<strong>都道府県一覧</strong>とほとんど同じですし、<strong>メンバー詳細</strong>も<strong>都道府県詳細</strong>と構造はほぼ同じです。<br>
 　<strong>メンバー詳細</strong>は<strong>都道府県詳細</strong>とは、コントロールの数（入力項目の数）の違い、一部の変数名の違いがあるだけです。<br>
 　ですから、もっと大規模な（入力が１００項目とかあるページ等）も、基本的には同じ構造で記述できますし、あるいは<strong>ヘッダやフッタ</strong>のように使いまわしするブロックでも<strong>コントロール</strong>を埋め込むことが可能になっています。<br>
 　機会があれば、複雑なページもサンプル化したいと思います。
 <br>
-　また<strong>PHPBase</strong>のサンプルは<strong>管理画面（バックオフィス）として使う</strong>のが使いやすい形になっています。<br>
+　また<strong>PHPBase2</strong>のサンプルは<strong>管理画面（バックオフィス）として使う</strong>のが使いやすい形になっています。<br>
 　もちろん<strong>フロント</strong>でも使用できますが、その場合、入力項目もここまで必要ないでしょうし、デザインももっとこらなければならないでしょう。<br>
 　また各種<strong>フロントエンドのライブラリ</strong>を使う場合でも、サーバーサイドで動くPHP環境に、データを読み書きするプログラムを設置してそれとやり取りをする形にすれば、問題なく動作します。<br>
-　それでは<strong>PHPBase</strong>を今後ともよろしくお願いします。
+　それでは<strong>PHPBase2</strong>を今後ともよろしくお願いします。
 
 </div>
 <!-- /コンテンツ　-->

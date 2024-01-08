@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
-<title>PHPBaseドキュメント</title>
+<title>PHPBase2ドキュメント</title>
 </head>
 <body>
 <!-- 全体コンテナ　-->
@@ -201,7 +200,7 @@ END_BLOCK;
 </pre>
 </div>
 　まず、この関数の引数は<strong>$debug</strong>です。これは<strong>発行されたSQL文を表示するかどうか</strong>のフラグで、これをtrueにするとSQL文をechoします。<br />
-　<strong>PHPBase</strong>は、プレースホルダに対応しています。ですので、SQL文は、そのまま実行するのではなく、いったん<strong>プレースホルダつきSQL</strong>として文を作成し、具体的に与えるデータは<strong>$prep_arr</strong>配列に入れます。<strong>$this->select_query()関数</strong>には、<strong>プレースホルダつきSQL</strong>と<strong>データの配列</strong>を渡す形になります。<br>
+　<strong>PHPBase2</strong>は、プレースホルダに対応しています。ですので、SQL文は、そのまま実行するのではなく、いったん<strong>プレースホルダつきSQL</strong>として文を作成し、具体的に与えるデータは<strong>$prep_arr</strong>配列に入れます。<strong>$this->select_query()関数</strong>には、<strong>プレースホルダつきSQL</strong>と<strong>データの配列</strong>を渡す形になります。<br>
 　とはいえ、上記の<strong>get_all_count()</strong>関数はデータを与えないので、空の<strong>$prep_arr</strong>配列を渡します。<br>
 　続いて<strong>get_all()関数</strong>です。
 <div class="box1">
@@ -251,7 +250,7 @@ END_BLOCK;
 　この関数は<strong>$debug</strong>のほかに<strong>$from,$limit</strong>という２つの引数を取ります。<strong>何行目から、何列</strong>という指定が入るわけですが、SQL文（$query変数）には直接入れないで、いったん<strong>:from と :limit</strong>というキーワードでSQL文を作成します。<br>
 　そのうえで、<strong>$prep_arr配列</strong>にそれぞれの値（データ）を設定します。ここでは<strong>:from は $from</strong>に対応し、<strong>:limit は $limit</strong>に対応します。<br>
 　その際（$prep_arr配列を作成する際）、データの<strong>型</strong>を明確にします（int、string等）。ライブラリでは、その型情報にもとに、SQLを実行します。<br>
-　<strong>プレースホルダ</strong>は<strong>: ではじまるキーワード（名前付きプレースフォルダ）</strong>のほかに<strong>?</strong>も使えますが、<strong>PHPBase</strong>では<strong>?</strong>には未対応です。　また、<strong>$prep_arr配列</strong>の作成時に<strong>':from' => (int)$from</strong>のように記述してますが、PHPのマニュアルでは<strong>'from' => (int)$from</strong>のような記述が説明されています。<br>
+　<strong>プレースホルダ</strong>は<strong>: ではじまるキーワード（名前付きプレースフォルダ）</strong>のほかに<strong>?</strong>も使えますが、<strong>PHPBase2</strong>では<strong>?</strong>には未対応です。　また、<strong>$prep_arr配列</strong>の作成時に<strong>':from' => (int)$from</strong>のように記述してますが、PHPのマニュアルでは<strong>'from' => (int)$from</strong>のような記述が説明されています。<br>
 　これは、同マニュアルにて<strong>配列のキーの前にも、コロン ":" を付けることができます(オプション) </strong>と記述があり、まあ、どちらでも良いようですが、個人的には<strong> : をつける</strong>ほうが、プレースホルダが明確になっていいのかな、と思います。<br>
 <br>
 　<strong>cprefectureクラス</strong>にはもう一つ<strong>get_tgt()関数</strong>があり、内容は以下の通りです。
@@ -294,9 +293,9 @@ END_BLOCK;
 </pre>
 </div>
 　赤くなっているところが<strong>プレースホルダ</strong>にかかわる部分です。この関数は、詳細ページの出力に使用します。
-<h4>PHPBaseの考え方</h4>
+<h4>PHPBase2の考え方</h4>
 　以上、ざっとですが<strong>コンテンツDBクラス</strong>である<strong>cprefectureクラス</strong>について説明しました。<br />
-　<strong>PHPBase</strong>の考え方は、このような<strong>コンテンツDBクラス</strong>を記述する作業と、<strong>prefecture_list.phpやprefecture_detail.php</strong>を記述する作業を分けることで、<strong>コードの階層化</strong>を図ろう、ということです。<br />
+　<strong>PHPBase2</strong>の考え方は、このような<strong>コンテンツDBクラス</strong>を記述する作業と、<strong>prefecture_list.phpやprefecture_detail.php</strong>を記述する作業を分けることで、<strong>コードの階層化</strong>を図ろう、ということです。<br />
 　各テーブルに対して（あるいはリレーショナルで同時にSELECT文に含めるテーブルのグループに対して）、<strong>コンテンツDBクラス</strong>を記述することで、上層部のコードからは<strong>SQL文</strong>を意識しないで記述ができるようになります。<br />
 　チームで組む場合は、例えば<strong>プログラムリーダー</strong>的な人が<strong>コンテンツDBクラス</strong>を担当し、それ以外に人が各ページを担当すれば、SQLの発行はプログラムリーダーが組む<strong>コンテンツDBクラス</strong>からしかできない形になります。<br />
 </div>

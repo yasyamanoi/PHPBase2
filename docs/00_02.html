@@ -2,7 +2,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link href="css/main.css" rel="stylesheet" type="text/css">
-<title>PHPBaseドキュメント</title>
+<title>PHPBase2ドキュメント</title>
 </head>
 <body>
 <!-- 全体コンテナ　-->
@@ -282,10 +282,10 @@ $page_obj->display();
 require_once("common/libs.php");
 </pre>
 </div>
-　これで、データベースアクセスを含め、<strong>PHPBase</strong>の準備が整います。<br>
+　これで、データベースアクセスを含め、<strong>PHPBase2</strong>の準備が整います。<br>
 <h4>１、ブロック</h4>
 　一般的なホームページは<strong>ヘッダ、本文、フッタ</strong>など、ブロックに分けることができます。一般的には<strong>ヘッダやフッタ</strong>は複数ページで共通して使うことができます。そうすることで、個別ページでは、その内容のみに集中して作成することができます。<br>
-　<strong>PHPBase</strong>では、<strong>ノードとブランチ</strong>という考え方で<strong>ブロック</strong>を作成することができます。<strong>ノード</strong>には<strong>子ノード</strong>や<strong>子ブランチ</strong>を作ることができます。<br>
+　<strong>PHPBase2</strong>では、<strong>ノードとブランチ</strong>という考え方で<strong>ブロック</strong>を作成することができます。<strong>ノード</strong>には<strong>子ノード</strong>や<strong>子ブランチ</strong>を作ることができます。<br>
 　<strong>sources/prefecture_list.php</strong>では<strong>cmain_node</strong>という<strong>本体ノードクラス</strong>を持っています<strong>ノードクラス</strong>は一般的には<strong>cnodeクラス</strong>を継承して作成します。
 　本体を<strong>ブランチクラス</strong>で作成することもできます。ですが製作途中で、<strong>子ノード</strong>や<strong>子ブランチ</strong>を加えたいときに<strong>ノードクラス</strong>で作成しておいたほうが便利です。（後ほど説明しますが、ヘッダクラスやフッタクラスは、動作が単純なので<strong>ブランチクラス</strong>で作成されています）。<br>
 <h4>２、ページオブジェクト</h4>
@@ -391,7 +391,7 @@ class cheader extends cbranch {
 &lt;head>
 &lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 &lt;link href="css/main.css" rel="stylesheet" type="text/css">
-&lt;title>PHPBaseサンプル&lt;/title>
+&lt;title>PHPBase2サンプル&lt;/title>
 &lt;/head>
 &lt;body>
 &lt;!-- 全体コンテナ　-->
@@ -506,7 +506,7 @@ $page_obj->display();
 </pre>
 </div>
 　ここでは、削除の場合の処理が記述され、その場合は、削除後に再読み込みを行います。<br>
-　<strong>PHPBase</strong>では<strong>コマンド</strong>の概念があります。これは<strong>$_POST</strong>があった場合の処理として、<strong>$_POST['func']</strong>及び<strong>$_POST['param']</strong>に、どういうコマンドがj発行されたかを記述します。<strong>PHPBase</strong>は基本的に<strong>自己参照型ページ</strong>として記述しますので、<strong>form</strong>の<strong>action</strong>は自分自身を指し、<strong>name</strong>は<strong>form1</strong>という固定の名前を持ちます。ここを統一することで、効率の良いサイトを構築できます。以下は、<strong>form</strong>の終了タグの直前の記述です。
+　<strong>PHPBase2</strong>では<strong>コマンド</strong>の概念があります。これは<strong>$_POST</strong>があった場合の処理として、<strong>$_POST['func']</strong>及び<strong>$_POST['param']</strong>に、どういうコマンドがj発行されたかを記述します。<strong>PHPBase2</strong>は基本的に<strong>自己参照型ページ</strong>として記述しますので、<strong>form</strong>の<strong>action</strong>は自分自身を指し、<strong>name</strong>は<strong>form1</strong>という固定の名前を持ちます。ここを統一することで、効率の良いサイトを構築できます。以下は、<strong>form</strong>の終了タグの直前の記述です。
 <div class="box1">
 <pre>
 &lt;input type="hidden" name="func" value="" >
@@ -644,7 +644,7 @@ END_BLOCK;
 </pre>
 </div>
 　この記述で、<strong>ページ分け</strong>のリンクを取得できます。<br>
-　<strong>PHPBase</strong>には<strong>コントロールクラス</strong>というのがあります。それらは<strong>common/controls.php</strong>および<strong>common/controls_ex.php</strong>に定義されていて、ここに<strong>テキストボックス</strong>や<strong>プルダウンリスト、ラジオボタン、チェックボックス</strong>といった、HTMLのform内に記述される<strong>入力オブジェクト</strong>がカプセル化しています。<br>
+　<strong>PHPBase2</strong>には<strong>コントロールクラス</strong>というのがあります。それらは<strong>common/controls.php</strong>および<strong>common/controls_ex.php</strong>に定義されていて、ここに<strong>テキストボックス</strong>や<strong>プルダウンリスト、ラジオボタン、チェックボックス</strong>といった、HTMLのform内に記述される<strong>入力オブジェクト</strong>がカプセル化しています。<br>
 　<strong>ページャー</strong>もその一つで、都道府県詳細ページでは<strong>テキストボックスコントロール</strong>の使用例があります。<br>
 　さらには、<strong>メンバー管理</strong>のサンプル（メインメニューからいける）には、様々なコントロール使用例が記述されています。
 <h4>６、詳細ページへのリンク</h4>
