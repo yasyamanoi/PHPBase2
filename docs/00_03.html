@@ -1,0 +1,703 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>００３．詳細ページの記述方法</h3>
+　ここでは、<strong>sources/prefecture_detail.php</strong>について説明します。<br />
+<br />
+<h4>詳細ページの機能</h4>
+　ページの最上部に<strong>ライブラリのインクルード</strong>が前項のようにありますので、それがまず記述されます。<br />
+　そして<strong>詳細ページ</strong>の機能は以下のようになります。<br />
+<div class="box1">
+<pre>
+１、一覧ページに戻ることができる
+２、都道府県名を修正できる（確認画面つき）
+３、都道府県を新規で追加できる（確認画面つき）
+</pre>
+</div>
+<h4>全体の内容</h4>
+　<strong>sources/prefecture_detail.php</strong>の内容は以下のようになります。
+<div class="box1">
+<pre>
+&lt;?php
+/*!
+@file prefecture_detail.php
+@brief 都道府県詳細
+@copyright Copyright (c) 2024 Yamanoi Yasushi.
+*/
+
+//ライブラリをインクルード
+require_once("common/libs.php");
+
+$err_array = array();
+$err_flag = 0;
+$page_obj = null;
+//プライマリキー
+$prefecture_id = 0;
+
+//--------------------------------------------------------------------------------------
+///	本体ノード
+//--------------------------------------------------------------------------------------
+class cmain_node extends cnode {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+		//プライマリキー
+		global $prefecture_id;
+		if(isset($_GET['pid']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_GET['pid'])
+			&& $_GET['pid'] > 0){
+			$prefecture_id = $_GET['pid'];
+		}
+		//$_POST優先
+		if(isset($_POST['prefecture_id']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_POST['prefecture_id'])
+			&& $_POST['prefecture_id'] > 0){
+			$prefecture_id = $_POST['prefecture_id'];
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  POST変数のデフォルト値をセット
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function post_default(){
+		cutil::post_default("prefecture_name",'');
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  本体実行（表示前処理）
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function execute(){
+		global $err_array;
+		global $err_flag;
+		global $page_obj;
+		//プライマリキー
+		global $prefecture_id;
+		if(is_null($page_obj)){
+			return;
+		}
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+				case 'set':
+					//パラメータのチェック
+					$page_obj->paramchk();
+					if($err_flag != 0){
+						$_POST['func'] = 'edit';
+					}
+					else{
+						$this->regist();
+					}
+				case 'conf':
+					//パラメータのチェック
+					$page_obj->paramchk();
+					if($err_flag != 0){
+						$_POST['func'] = 'edit';
+					}
+				break;
+				case 'edit':
+					//戻るボタン。
+				break;
+				default:
+					//通常はありえない
+					echo '原因不明のエラーです。';
+					exit;
+				break;
+			}
+		}
+		else{
+			if($prefecture_id > 0){
+				$prefecture_obj = new cprefecture();
+				//$_POSTにデータを読み込む
+				$_POST = $prefecture_obj->get_tgt(false,$prefecture_id);
+				if(cutil::array_chk($_POST)){
+					//データ取得成功
+					$_POST['func'] = 'edit';
+				}
+				else{
+					//データの取得に失敗したので新規の入力フォーム
+					$_POST['func'] = 'new';
+					//POSTデフォルト値のセット
+					$this->post_default();
+				}
+			}
+			else{
+				//新規の入力フォーム
+				$_POST['func'] = 'new';
+				//POSTデフォルト値のセット
+				$this->post_default();
+			}
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	パラメータのチェック
+	@return	エラーの場合はfalseを返す
+	*/
+	//--------------------------------------------------------------------------------------
+	function paramchk(){
+		global $err_array;
+		global $err_flag;
+		/// 都道府県名の存在と空白チェック
+		if(cutil_ex::chkset_err_field($err_array,'prefecture_name','都道府県名','isset_nl')){
+			$err_flag = 1;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県の追加／更新。保存後自分自身を再読み込みする。
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function regist(){
+		global $prefecture_id;
+		$change_obj = new crecord();
+		$dataarr = array();
+		$dataarr['prefecture_name'] = (string)$_POST['prefecture_name'];
+		if($prefecture_id > 0){
+			$where = 'prefecture_id = :prefecture_id';
+			$wherearr[':prefecture_id'] = (int)$prefecture_id;
+			$change_obj->update_core(false,'prefecture',$dataarr,$where,$wherearr,false);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $prefecture_id);
+		}
+		else{
+			$pid = $change_obj->insert_core(false,'prefecture',$dataarr,false);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $pid);
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	エラー存在文字列の取得
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_err_flag(){
+		global $err_flag;
+		switch($err_flag){
+			case 1:
+			$str =&lt;&lt;&lt;END_BLOCK
+
+&lt;p class="red">入力エラーがあります。各項目のエラーを確認してください。&lt;/p>
+END_BLOCK;
+			return $str;
+			break;
+			case 2:
+			$str =&lt;&lt;&lt;END_BLOCK
+
+&lt;p class="red">更新に失敗しました。サポートを確認下さい。&lt;/p>
+END_BLOCK;
+			return $str;
+			break;
+		}
+		return '';
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県IDの取得(新規の場合は<strong>新規</strong>)
+	@return	都道府県ID
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_prefecture_id_txt(){
+		global $prefecture_id;
+		if($prefecture_id &lt;= 0){
+			return '新規';
+		}
+		else{
+			return $prefecture_id;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県コントロールの取得
+	@return	都道府県コントロール
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_prefecture_name(){
+		global $err_array;
+		$ret_str = '';
+		$tgt = new ctextbox('prefecture_name',$_POST['prefecture_name'],'size="70"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['prefecture_name'])){
+			$ret_str .=  '&lt;br />&lt;span class="red">' 
+			. cutil::ret2br($err_array['prefecture_name']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	操作ボタンの取得
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_switch(){
+		global $prefecture_id;
+		$ret_str = '';
+		if($_POST['func'] == 'conf'){
+			$button = '更新';
+			if($prefecture_id &lt;= 0){
+				$button = '追加';
+			}
+			$ret_str =&lt;&lt;&lt;END_BLOCK
+
+&lt;input type="button"  value="戻る" onClick="set_func_form('edit','')"/>&nbsp;
+&lt;input type="button"  value="{$button}" onClick="set_func_form('set','')"/>
+END_BLOCK;
+		}
+		else{
+			$ret_str =&lt;&lt;&lt;END_BLOCK
+
+&lt;input type="button"  value="確認" onClick="set_func_form('conf','')"/>
+END_BLOCK;
+		}
+		return $ret_str;
+	}
+
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		global $prefecture_id;
+		$err_flag = $this->get_err_flag();
+		$prefecture_id_txt = $this->get_prefecture_id_txt();
+		$prefecture_name = $this->get_prefecture_name();
+		$switch = $this->get_switch();
+		$echostr = &lt;&lt;&lt; END_BLOCK
+&lt;div id="headTitle">
+&lt;h2>都道府県詳細&lt;/h2>
+&lt;/div>
+&lt;!-- コンテンツ　-->
+&lt;div id="contents">
+{$err_flag}
+&lt;form name="form1" action="{$_SERVER['PHP_SELF']}" method="post" >
+&lt;a href="prefecture_list.php">一覧に戻る&lt;/a>
+&lt;table>
+&lt;tr>
+&lt;th>ID&lt;/th>
+&lt;td width="70%">{$prefecture_id_txt}&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th>都道府県名&lt;/th>
+&lt;td width="70%">{$prefecture_name}&lt;/td>
+&lt;/tr>
+&lt;/table>
+&lt;input type="hidden" name="func" value="" />
+&lt;input type="hidden" name="param" value="" />
+&lt;input type="hidden" name="prefecture_id" value="{$prefecture_id}" />
+&lt;p class="center">{$switch}&lt;/p>
+&lt;/form>
+&lt;/div>
+&lt;!-- /コンテンツ　-->
+END_BLOCK;
+		echo $echostr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
+
+//ページを作成
+$page_obj = new cnode();
+//ヘッダ追加
+$page_obj->add_child(cutil::create('cheader'));
+//本体追加
+$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+//フッタ追加
+$page_obj->add_child(cutil::create('cfooter'));
+//構築時処理
+$page_obj->create();
+//本体実行（表示前処理）
+$cmain_obj->execute();
+//ページ全体を表示
+$page_obj->display();
+
+?>
+</pre>
+</div>
+　この項では、前項で紹介した<strong>ブロック、ノード、ブランチ</strong>などの関連と<strong>ページオブジェクト</strong>についての説明はしません。調べる場合は前項を確認ください。
+<h4>１，コンストラクタ</h4>
+　詳細ページの本体クラス<strong>cmain_node</strong>のコンストラクタには、記述があります。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+		//プライマリキー
+		global $prefecture_id;
+		if(isset($_GET['pid']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_GET['pid'])
+			&& $_GET['pid'] > 0){
+			$prefecture_id = $_GET['pid'];
+		}
+		//$_POST優先
+		if(isset($_POST['prefecture_id']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_POST['prefecture_id'])
+			&& $_POST['prefecture_id'] > 0){
+			$prefecture_id = $_POST['prefecture_id'];
+		}
+	}
+</pre>
+</div>
+　ここでは<strong>プライマリキー（都道府県ID）</strong>の扱いを記述します。<strong>create関数</strong>でも問題ないかと思いますが、詳細ページではかなり重要なパラメータなので、目立つようにしています。<strong>プライマリキー（都道府県ID）</strong>は<strong>一覧ページ</strong>から呼ばれた場合は<strong>GET</strong>で渡されます。しかし、<strong>POST</strong>で<strong>確認画面、入力画面</strong>を行ったり来たりする場合は、<strong>POST</strong>で渡されます。ここは重要です。
+<h4>２，execute()関数</h4>
+　詳細ページも<strong>execute()関数</strong>は重要です。内容は以下になります。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  本体実行（表示前処理）
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function execute(){
+		global $err_array;
+		global $err_flag;
+		global $page_obj;
+		//プライマリキー
+		global $prefecture_id;
+		if(is_null($page_obj)){
+			return;
+		}
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+				case 'set':
+					//パラメータのチェック
+					$page_obj->paramchk();
+					if($err_flag != 0){
+						$_POST['func'] = 'edit';
+					}
+					else{
+						$this->regist();
+					}
+				case 'conf':
+					//パラメータのチェック
+					$page_obj->paramchk();
+					if($err_flag != 0){
+						$_POST['func'] = 'edit';
+					}
+				break;
+				case 'edit':
+					//戻るボタン。
+				break;
+				default:
+					//通常はありえない
+					echo '原因不明のエラーです。';
+					exit;
+				break;
+			}
+		}
+		else{
+			if($prefecture_id > 0){
+				$prefecture_obj = new cprefecture();
+				//$_POSTにデータを読み込む
+				$_POST = $prefecture_obj->get_tgt(false,$prefecture_id);
+				if(cutil::array_chk($_POST)){
+					//データ取得成功
+					$_POST['func'] = 'edit';
+				}
+				else{
+					//データの取得に失敗したので新規の入力フォーム
+					$_POST['func'] = 'new';
+					//POSTデフォルト値のセット
+					$this->post_default();
+				}
+			}
+			else{
+				//新規の入力フォーム
+				$_POST['func'] = 'new';
+				//POSTデフォルト値のセット
+				$this->post_default();
+			}
+		}
+	}
+</pre>
+</div>
+　このように一覧ページのものとは違いがあります。<br>
+　<strong>$_POST['func']</strong>を確認するのは変わらないのですが、<strong>set、conf、edit、new</strong>の４つの状態を持ちます。<br>
+　<strong>editとnew</strong>はあまり違わないですが<strong>setやconf</strong>は別物です。<strong>set</strong>はデータを保存し、自分自身を再読み込みします。<strong>conf</strong>は<strong>確認画面</strong>です。<br>
+　ここでは
+<div class="box1">
+<pre>
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+</pre>
+</div>
+　のように<strong>コマンドがあるかどうか、if(isset($_POST['func'])）</strong>で判別し、コマンドがあった場合は、<strong>switch($_POST['func'])</strong>で分岐を行っています。<br>
+　更新命令や確認命令の場合
+<div class="box1">
+<pre>
+					//パラメータのチェック
+					$page_obj->paramchk();
+</pre>
+</div>
+　を行います。<strong>$page_obj</strong>の<strong>paramchk()関数</strong>を呼び出すのがポイントです。<br>
+　こうすることで、本体クラスだけではなく、設定されているすべてのノードやブランチの<strong>paramchk()関数</strong>を呼び出すことができます。<br>
+　各クラスの<strong>paramchk()関数</strong>では、入力項目に不備があった場合に、グローバル領域の<strong>$err_flag</strong>を<strong>0以外</strong>に設定し、同じくグローバル領域にある<strong>$err_array</strong>配列に、自分自身が抱えるコントロールなどのエラー文字列を登録します。<br>
+　本体ノード（cmain_nodeクラス）の<strong>paramchk()関数</strong>は以下のようになっています。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	パラメータのチェック
+	@return	エラーの場合はfalseを返す
+	*/
+	//--------------------------------------------------------------------------------------
+	function paramchk(){
+		global $err_array;
+		global $err_flag;
+		/// 都道府県名の存在と空白チェック
+		if(cutil_ex::chkset_err_field($err_array,'prefecture_name','都道府県名','isset_nl')){
+			$err_flag = 1;
+		}
+	}
+</pre>
+</div>
+　<strong>cutil_ex::chkset_err_field()関数</strong>は<strong>common/contents_func.php</strong>に記述があり、ここでは<strong>$_POST['prefecture_name']</strong>が存在しないか空白であれば、<strong>$err_array['prefecture_name']</strong>に<strong>都道府県名は必須項目です</strong>というエラー文字列をセットします。<br>
+　ここでは<strong>cutil_ex::chkset_err_field()関数</strong>を使ってますが、独自のエラー処理を記述したければ<strong>$err_array['項目名']</strong>にエラー文字列をセットして、<strong>$err_flag = 1;</strong>のように<strong>$err_flag</strong>に<strong>0以外</strong>を代入すればかまいません。<br>
+
+　パラメータのチェックでエラーになれば<strong>$_POST['func']='edit';</strong>とし、修正入力ができるようにします。<br>
+　チェックに合格すれば。<strong>conf</strong>の場合は、<strong>確認画面（入力できない画面）</strong>を表示します。<br>
+　<strong>set</strong>の場合は<strong>$this->regist();</strong>関数を呼び出します。<strong>$this->regist()関数</strong>は以下です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県の追加／更新。保存後自分自身を再読み込みする。
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function regist(){
+		global $prefecture_id;
+		$change_obj = new crecord();
+		$dataarr = array();
+		$dataarr['prefecture_name'] = (string)$_POST['prefecture_name'];
+		if($prefecture_id > 0){
+			$where = 'prefecture_id = :prefecture_id';
+			$wherearr[':prefecture_id'] = (int)$prefecture_id;
+			$change_obj->update_core(false,'prefecture',$dataarr,$where,$wherearr,false);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $prefecture_id);
+		}
+		else{
+			$pid = $change_obj->insert_core(false,'prefecture',$dataarr,false);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $pid);
+		}
+	}
+</pre>
+</div>
+　ここでは、<strong>追加または更新</strong>を行います。いずれの場合も
+<div class="box1">
+<pre>
+		$change_obj = new crecord();
+		$dataarr = array();
+</pre>
+</div>
+　と、<strong>crecordのインスタンス（$change_obj）</strong>を作成します。<br>
+　そして配列<strong>$dataarr</strong>を用意し
+<div class="box1">
+<pre>
+		$dataarr['prefecture_name'] = (string)$_POST['prefecture_name'];
+</pre>
+</div>
+　のように、追加／更新するデータベーステーブルの<strong>フィールド名</strong>をキーにし、<strong>値</strong>をセットします。<strong>値</strong>は必ず、そのデータの型が明確になるようにします。<br>
+　この例では<strong>prefecture_name</strong>というフィールドのみですが、複数のフィールドを更新したい場合は、続けて
+<div class="box1">
+<pre>
+		$dataarr[フィールド名] = (型名)値;
+</pre>
+</div>
+　のように記述します。<strong>PHPBase</strong>ももう一つのサンプルである<strong>メンバー管理</strong>の詳細ページでは、複数フィールドが記述されています。<br>
+　$dataarrへのセットが終わったら、<strong>追加</strong>か<strong>更新</strong>かで分岐します。ここではプライマリキーである<strong>$prefecture_id</strong>が<strong>0より大きい</strong>場合は、<strong>更新</strong>、それ以外は<strong>追加</strong>としています。<br>
+　<strong>更新</strong>の場合は、一覧ページでの<strong>削除</strong>のように
+<div class="box1">
+<pre>
+			$where = 'prefecture_id = :prefecture_id';
+			$wherearr[':prefecture_id'] = (int)$prefecture_id;
+</pre>
+</div>
+　とプレースホルダを準備し
+<div class="box1">
+<pre>
+			$change_obj->update_core(false,'prefecture',$dataarr,$where,$wherearr,false);
+</pre>
+</div>
+　のように<strong>$change_obj->update_core()関数</strong>を呼び出します。<br>
+　<strong>$dataarr</strong>については<strong>プレースホルダ</strong>にする必要がありません。<strong>PHPBase内部</strong>で<strong>プレースホルダ化</strong>されます。<br>
+　そして
+<div class="box1">
+<pre>
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $prefecture_id);
+</pre>
+</div>
+　と自分自身にリダイレクトします。パラメータはGET変数として、プライマリキーを渡します。<br>
+　そのため同じ詳細ページが表示されます。<br>
+　リダイレクト先は、例えば<strong>ありがとうございます</strong>のようなページの場合もあると思います。<br>
+　それでもかまいませんが、必ず<strong>GETでページの読み直し</strong>をするということです。<strong>POST</strong>の状態だと、ブラウザの更新ボタンで<strong>２重POST</strong>の危険があります。<br>
+　<strong>追加</strong>の場合は、条件がないので<strong>プレースホルダ</strong>は作成する必要がありません。保存するデータは、<strong>PHPBase内部</strong>で<strong>プレースホルダ化</strong>されます。以下が追加用の関数呼び出しです。
+<div class="box1">
+<pre>
+			$pid = $change_obj->insert_core(false,'prefecture',$dataarr,false);
+</pre>
+</div>
+　追加関数は、戻り値として<strong>追加したレコードのプライマリキー</strong>を返します。ですので<strong>$pid</strong>に保持しておいて
+<div class="box1">
+<pre>
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?pid=' . $pid);
+</pre>
+</div>
+　とGETで渡します。すると、新しく追加した詳細ページが表示されることになります。
+<h4>３，ページの表示</h4>
+　ページの表示は、ヘッダとフッタに関しては、一覧ページ同様、使いまわしのクラスが使われます。<br>
+　本体については、<strong>cmain_node::display()関数</strong>が使われます。内容は以下です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		global $prefecture_id;
+		$err_flag = $this->get_err_flag();
+		$prefecture_id_txt = $this->get_prefecture_id_txt();
+		$prefecture_name = $this->get_prefecture_name();
+		$switch = $this->get_switch();
+		$echostr = &lt;&lt;&lt; END_BLOCK
+&lt;div id="headTitle">
+&lt;h2>都道府県詳細&lt;/h2>
+&lt;/div>
+&lt;!-- コンテンツ　-->
+&lt;div id="contents">
+{$err_flag}
+&lt;form name="form1" action="{$_SERVER['PHP_SELF']}" method="post" >
+&lt;a href="prefecture_list.php">一覧に戻る&lt;/a>
+&lt;table>
+&lt;tr>
+&lt;th>ID&lt;/th>
+&lt;td width="70%">{$prefecture_id_txt}&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th>都道府県名&lt;/th>
+&lt;td width="70%">{$prefecture_name}&lt;/td>
+&lt;/tr>
+&lt;/table>
+&lt;input type="hidden" name="func" value="" />
+&lt;input type="hidden" name="param" value="" />
+&lt;input type="hidden" name="prefecture_id" value="{$prefecture_id}" />
+&lt;p class="center">{$switch}&lt;/p>
+&lt;/form>
+&lt;/div>
+&lt;!-- /コンテンツ　-->
+END_BLOCK;
+		echo $echostr;
+	}
+</pre>
+</div>
+　ここで特筆すべきは<strong>$prefecture_name = $this->get_prefecture_name();</strong>の記述です。<br>
+　<strong>get_prefecture_name()関数</strong>は以下です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県コントロールの取得
+	@return	都道府県コントロール
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_prefecture_name(){
+		global $err_array;
+		$ret_str = '';
+		$tgt = new ctextbox('prefecture_name',$_POST['prefecture_name'],'size="70"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['prefecture_name'])){
+			$ret_str .=  '&lt;br />&lt;span class="red">' 
+			. cutil::ret2br($err_array['prefecture_name']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+</pre>
+</div>
+　ここでは<strong>ctextboxクラス</strong>を使って、<strong>1行入力テキストボックス</strong>を作成しています。
+<div class="box1">
+<pre>
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+</pre>
+</div>
+　と呼び出すことで<strong>confコマンド（確認画面）</strong>の場合は<strong>true</strong>で<strong>get()関数</strong>を呼び出す形になります。<br>
+　<strong>get()関数</strong>は<strong>true</strong>を渡すと入力できない確認画面用のHTML文字列を生成します。<br>
+　その後、<strong>$err_array['prefecture_name']</strong>が存在するかどうかを確認して、存在してれば、エラーメッセージを出力します。
+<h4>４，まとめ</h4>
+　前項の<strong>都道府県一覧</strong>に続いて、この項では<strong>都道府県詳細</strong>ページの説明を行いました。<br>
+　実は、この２つの項で<strong>PHPBase</strong>の多くのことがソース化されています。<br>
+　<strong>PHPBase</strong>にはサンプルとしてもう一つ<strong>メンバー管理</strong>があります。<br>
+　そのソースを見ていただくとわかりますが、<strong>メンバー一覧</strong>は<strong>都道府県一覧</strong>とほとんど同じですし、<strong>メンバー詳細</strong>も<strong>都道府県詳細</strong>と構造はほぼ同じです。<br>
+　<strong>メンバー詳細</strong>は<strong>都道府県詳細</strong>とは、コントロールの数（入力項目の数）の違い、一部の変数名の違いがあるだけです。<br>
+　ですから、もっと大規模な（入力が１００項目とかあるページ等）も、基本的には同じ構造で記述できますし、あるいは<strong>ヘッダやフッタ</strong>のように使いまわしするブロックでも<strong>コントロール</strong>を埋め込むことが可能になっています。<br>
+　機会があれば、複雑なページもサンプル化したいと思います。
+<br>
+　また<strong>PHPBase</strong>のサンプルは<strong>管理画面（バックオフィス）として使う</strong>のが使いやすい形になっています。<br>
+　もちろん<strong>フロント</strong>でも使用できますが、その場合、入力項目もここまで必要ないでしょうし、デザインももっとこらなければならないでしょう。<br>
+　また各種<strong>フロントエンドのライブラリ</strong>を使う場合でも、サーバーサイドで動くPHP環境に、データを読み書きするプログラムを設置してそれとやり取りをする形にすれば、問題なく動作します。<br>
+　それでは<strong>PHPBase</strong>を今後ともよろしくお願いします。
+
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="00_02.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

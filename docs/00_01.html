@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>００１．中間層PHPの構造と記述方法</h3>
+　この項では<strong>中間層PHP</strong>である<strong>common/contents_db.php</strong>について説明します。<br/>
+　<strong>中間層PHP</strong>とは具体的には<strong>SELECT文</strong>を発行するクラスです。<strong>INSERT、UPDATE、DELETE</strong>など更新系のSQL</strong>については後述します。<br />
+　これから説明するようなクラスは、実際にPHPでサイトを作成する上で、各自が記述する必要があります。このドキュメントではサンプルとして<strong>都道府県テーブル</strong>用のクラスが記述されています。<br />
+　この項では、<strong>都道府県テーブル</strong>用のクラスを説明することで、記述方法の説明とします。<br />
+<br />
+<h4>コンテンツDBクラス</h4>
+　<strong>common/contents_db.php</strong>をエディタで開くと以下のようなクラスがあります。
+<div class="box1">
+<pre>
+//--------------------------------------------------------------------------------------
+///	都道府県クラス
+//--------------------------------------------------------------------------------------
+class cprefecture extends crecord {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	すべての個数を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@return	個数
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_count($debug){
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+count(*)
+from
+prefecture
+where
+1
+END_BLOCK;
+		//空のデータ
+		$prep_arr = array();
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,		//デバッグ表示するかどうか
+			$query,		//プレースホルダつきSQL
+			$prep_arr	//データの配列
+		);
+		if($row = $this->fetch_assoc()){
+			//取得した個数を返す
+			return $row['count(*)'];
+		}
+		else{
+			return 0;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定された範囲の配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$from	抽出開始行
+	@param[in]	$limit	抽出数
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all($debug,$from,$limit){
+		$arr = array();
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+prefecture
+where
+1
+order by
+prefecture_id asc
+limit :from, :limit
+END_BLOCK;
+		$prep_arr = array(
+				':from' => (int)$from,
+				':limit' => (int)$limit);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,		//デバッグ表示するかどうか
+			$query,		//プレースホルダつきSQL
+			$prep_arr	//データの配列
+		);
+		//順次取り出す
+		while($row = $this->fetch_assoc()){
+			$arr[] = $row;
+		}
+		//取得した配列を返す
+		return $arr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定されたIDの配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@return	配列（1次元配列になる）空の場合はfalse
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_tgt($debug,$id){
+		if(!cutil::is_number($id)
+		||  $id &lt; 1){
+			//falseを返す
+			return false;
+		}
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+prefecture
+where
+prefecture_id = :prefecture_id
+END_BLOCK;
+		$prep_arr = array(
+				':prefecture_id' => (int)$id
+		);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,		//デバッグ表示するかどうか
+			$query,		//プレースホルダつきSQL
+			$prep_arr	//データの配列
+		);
+		return $this->fetch_assoc();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
+</pre>
+</div>
+　このクラスは、<strong>都道府県テーブル</strong>の<strong>SELECT文用</strong>のクラスです。<br />
+　<strong>都道府県テーブル</strong>は<strong>prefecture</strong>という名前です。<strong>prefecture</strong>をSELECTするクラスなので<strong>cprefectureクラス</strong>としています。<br />
+　このドキュメントでは、このようなクラスを<strong>コンテンツDBクラス</strong>と称します。<strong>コンテンツDBクラス</strong>は、必ず<strong>crecordクラス</strong>を継承して作成します。<br />
+　<strong>prefectureテーブル</strong>のようなテーブルを<strong>マスタテーブル</strong>といいます。<strong>日常的に変更が行われることが少ない</strong>テーブルです。<strong>マスタテーブル</strong>は通常は管理画面などで<strong>追加や更新</strong>ができるようになっています。<br />
+　単純なマスタテーブル用のSQL文は、<strong>総レコードの数を得る</strong>、<strong>指定したレコードから何行かを取り出す</strong>、<strong>指定したレコードを取り出す</strong>の３つのアクセス方法があれば足りる場合が多いと思います。<br />
+<br />
+<h4>SELECT文を発行する</h4>
+　<strong>cprefectureクラス</strong>はこららのSQLに対応するメンバ関数が記述されています。<br />
+　まず、<strong>総レコードの数を得る</strong>は<strong>get_all_count()関数</strong>です。以下に抜き出します。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	すべての個数を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@return	個数
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_count($debug){
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+count(*)
+from
+prefecture
+where
+1
+END_BLOCK;
+		//空のデータ
+		$prep_arr = array();
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,		//デバッグ表示するかどうか
+			$query,		//プレースホルダつきSQL
+			$prep_arr	//データの配列
+		);
+		if($row = $this->fetch_assoc()){
+			//取得した個数を返す
+			return $row['count(*)'];
+		}
+		else{
+			return 0;
+		}
+	}
+</pre>
+</div>
+　まず、この関数の引数は<strong>$debug</strong>です。これは<strong>発行されたSQL文を表示するかどうか</strong>のフラグで、これをtrueにするとSQL文をechoします。<br />
+　<strong>PHPBase</strong>は、プレースホルダに対応しています。ですので、SQL文は、そのまま実行するのではなく、いったん<strong>プレースホルダつきSQL</strong>として文を作成し、具体的に与えるデータは<strong>$prep_arr</strong>配列に入れます。<strong>$this->select_query()関数</strong>には、<strong>プレースホルダつきSQL</strong>と<strong>データの配列</strong>を渡す形になります。<br>
+　とはいえ、上記の<strong>get_all_count()</strong>関数はデータを与えないので、空の<strong>$prep_arr</strong>配列を渡します。<br>
+　続いて<strong>get_all()関数</strong>です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定された範囲の配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$from	抽出開始行
+	@param[in]	$limit	抽出数
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all($debug,$from,$limit){
+		$arr = array();
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+prefecture
+where
+1
+order by
+prefecture_id asc
+limit <span class="red">:from, :limit</span>
+END_BLOCK;
+		<span class="red">$prep_arr = array(
+				':from' => (int)$from,
+				':limit' => (int)$limit);</span>
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,		//デバッグ表示するかどうか
+			$query,		//プレースホルダつきSQL
+			$prep_arr	//データの配列
+		);
+		//順次取り出す
+		while($row = $this->fetch_assoc()){
+			$arr[] = $row;
+		}
+		//取得した配列を返す
+		return $arr;
+	}
+</pre>
+</div>
+　赤くなっているところが<strong>プレースホルダ</strong>にかかわる部分です。<br />
+　この関数は<strong>$debug</strong>のほかに<strong>$from,$limit</strong>という２つの引数を取ります。<strong>何行目から、何列</strong>という指定が入るわけですが、SQL文（$query変数）には直接入れないで、いったん<strong>:from と :limit</strong>というキーワードでSQL文を作成します。<br>
+　そのうえで、<strong>$prep_arr配列</strong>にそれぞれの値（データ）を設定します。ここでは<strong>:from は $from</strong>に対応し、<strong>:limit は $limit</strong>に対応します。<br>
+　その際（$prep_arr配列を作成する際）、データの<strong>型</strong>を明確にします（int、string等）。ライブラリでは、その型情報にもとに、SQLを実行します。<br>
+　<strong>プレースホルダ</strong>は<strong>: ではじまるキーワード（名前付きプレースフォルダ）</strong>のほかに<strong>?</strong>も使えますが、<strong>PHPBase</strong>では<strong>?</strong>には未対応です。　また、<strong>$prep_arr配列</strong>の作成時に<strong>':from' => (int)$from</strong>のように記述してますが、PHPのマニュアルでは<strong>'from' => (int)$from</strong>のような記述が説明されています。<br>
+　これは、同マニュアルにて<strong>配列のキーの前にも、コロン ":" を付けることができます(オプション) </strong>と記述があり、まあ、どちらでも良いようですが、個人的には<strong> : をつける</strong>ほうが、プレースホルダが明確になっていいのかな、と思います。<br>
+<br>
+　<strong>cprefectureクラス</strong>にはもう一つ<strong>get_tgt()関数</strong>があり、内容は以下の通りです。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定されたIDの配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@return	配列（1次元配列になる）空の場合はfalse
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_tgt($debug,$id){
+		if(!cutil::is_number($id)
+		||  $id &lt; 1){
+			//falseを返す
+			return false;
+		}
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+prefecture
+where
+prefecture_id = <span class="red">:prefecture_id</span>
+END_BLOCK;
+		<span class="red">$prep_arr = array(
+				':prefecture_id' => (int)$id
+		);</span>
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,		//デバッグ表示するかどうか
+			$query,		//プレースホルダつきSQL
+			$prep_arr	//データの配列
+		);
+		return $this->fetch_assoc();
+	}
+</pre>
+</div>
+　赤くなっているところが<strong>プレースホルダ</strong>にかかわる部分です。この関数は、詳細ページの出力に使用します。
+<h4>PHPBaseの考え方</h4>
+　以上、ざっとですが<strong>コンテンツDBクラス</strong>である<strong>cprefectureクラス</strong>について説明しました。<br />
+　<strong>PHPBase</strong>の考え方は、このような<strong>コンテンツDBクラス</strong>を記述する作業と、<strong>prefecture_list.phpやprefecture_detail.php</strong>を記述する作業を分けることで、<strong>コードの階層化</strong>を図ろう、ということです。<br />
+　各テーブルに対して（あるいはリレーショナルで同時にSELECT文に含めるテーブルのグループに対して）、<strong>コンテンツDBクラス</strong>を記述することで、上層部のコードからは<strong>SQL文</strong>を意識しないで記述ができるようになります。<br />
+　チームで組む場合は、例えば<strong>プログラムリーダー</strong>的な人が<strong>コンテンツDBクラス</strong>を担当し、それ以外に人が各ページを担当すれば、SQLの発行はプログラムリーダーが組む<strong>コンテンツDBクラス</strong>からしかできない形になります。<br />
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="00_00.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+<li><a href="00_02.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>

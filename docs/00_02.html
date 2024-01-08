@@ -1,0 +1,739 @@
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<link href="css/main.css" rel="stylesheet" type="text/css">
+<title>PHPBaseドキュメント</title>
+</head>
+<body>
+<!-- 全体コンテナ　-->
+<div id="container">
+<div id="header">
+<h2>０．セットアップと最初のサンプル</h2>
+</div>
+<!-- コンテンツ　-->
+<div id="contents">
+<h3>００２．一覧ページの記述方法</h3>
+　ここでは、<strong>上層PHP</strong>である<strong>sources/prefecture_list.php</strong>について説明します。<br />
+　ただ、<strong>上層PHP</strong>はデザインやPOSTする具体的な方法などが記述されます。これらは、各サイトによっても考え方も違うでしょうし、JQueryやJavaScriptの使用状況によっても記述が変わってくると思います。<br />
+　ですので、上層ページにおける<strong>コンテンツDBクラスのメンバ関数呼び出し</strong>を中心に説明したいと思います。<br />
+<br />
+<h4>一覧ページの機能</h4>
+　前々項で動作チェックしたように、<strong>都道府県一覧</strong>には以下の機能があります。
+<div class="box1">
+<pre>
+１、ページ分けされた一覧表示
+２、各項目の削除
+３、詳細ページへのリンク
+４、新規の形での詳細ページへのリンク
+</pre>
+</div>
+　この項では、それぞれの機能ごとに説明したいと思います。<strong>sources/prefecture_list.php</strong>を開いてください。<br />
+　以下がその内容になります。
+<div class="box1">
+<pre>
+&lt;?php
+/*!
+@file prefecture_list.php
+@brief 都道府県一覧
+@copyright Copyright (c) 2024 Yamanoi Yasushi.
+*/
+
+//ライブラリをインクルード
+require_once("common/libs.php");
+
+$err_array = array();
+$err_flag = 0;
+$page_obj = null;
+
+//ページの設定
+//デフォルトは1
+$page = 1;
+//もしページが指定されていたら
+if(isset($_GET['page']) 
+    //なおかつ、数字だったら
+    && cutil::is_number($_GET['page'])
+    //なおかつ、0より大きかったら
+    && $_GET['page'] > 0){
+    //パラメータを設定
+    $page = $_GET['page'];
+}
+
+//1ページのリミット
+$limit = 20;
+$prefecture_rows = array();
+
+
+//--------------------------------------------------------------------------------------
+///	本体ノード
+//--------------------------------------------------------------------------------------
+class cmain_node extends cnode {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	データ読み込み
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function readdata(){
+		global $limit;
+		global $prefecture_rows;
+		global $page;
+		$obj = new cprefecture();
+		$from = ($page - 1) * $limit;
+		$prefecture_rows = $obj->get_all(false,$from,$limit);
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	削除
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function deljob(){
+		if(isset($_POST['param']) && $_POST['param'] > 0){
+			$where = 'prefecture_id = :prefecture_id';
+			$wherearr[':prefecture_id'] = (int)$_POST['param'];
+			$change_obj = new crecord();
+			$change_obj->delete_core(false,'prefecture',$where,$wherearr,false);
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  本体実行（表示前処理）
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function execute(){
+		global $err_array;
+		global $err_flag;
+		global $page_obj;
+		if(is_null($page_obj)){
+			return;
+		}
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+				case "del":
+					//削除操作
+					$this->deljob();
+					//再読み込みのためにリダイレクト
+					cutil::redirect_exit($_SERVER['PHP_SELF']);
+				break;
+				default:
+					echo 'エラー';
+					exit();
+				break;
+			}
+		}
+		//データの読み込み
+		$this->readdata();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県のリストを得る
+	@return	都道府県リストの文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_prefecture_rows(){
+		global $prefecture_rows;
+		global $page;
+		$retstr = '';
+		$urlparam = '&page=' . $page;
+		$rowscount = 1;
+		if(count($prefecture_rows) > 0){
+			foreach($prefecture_rows as $key => $value){
+				$javamsg =  '【' . $value['prefecture_name'] . '】';
+				$nobottom = '';
+				if($rowscount == count($prefecture_rows)){
+					$nobottom = ' nobottom';
+				}
+				$str =&lt;&lt;&lt;END_BLOCK
+&lt;tr>
+&lt;td width="20%" class="center{$nobottom}">
+{$value['prefecture_id']}
+&lt;/td>
+&lt;td width="65%" class="center{$nobottom}">
+&lt;a href="prefecture_detail.php?pid={$value['prefecture_id']}{$urlparam}">{$value['prefecture_name']}&lt;/a>
+&lt;/td>
+&lt;td width="15%" class="center{$nobottom}">
+&lt;input type="button" value="削除確認" onClick="del_func_form({$value['prefecture_id']},'{$javamsg}');" />
+&lt;/td>
+&lt;/tr>
+END_BLOCK;
+			$retstr .= $str;
+			$rowscount++;
+			}
+		}
+		else{
+			$retstr =&lt;&lt;&lt;END_BLOCK
+&lt;tr>&lt;td colspan="3" class="nobottom">都道府県が見つかりません&lt;/td>&lt;/tr>
+END_BLOCK;
+		}
+		return $retstr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	ページャーを得る
+	@return	ページャー文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_page_block(){
+		global $limit;
+		global $page;
+		$obj = new cprefecture();
+		$allcount = $obj->get_all_count(false);
+		$ctl = new cpager($_SERVER['PHP_SELF'],$allcount,$limit);
+		return $ctl->get('page',$page);
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	POSTするURLを得る
+	@return	POSTするURL
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_tgt_uri(){
+		global $page;
+		return $_SERVER['PHP_SELF'] 
+		. '?page=' . $page;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		$prefec_rows = $this->get_prefecture_rows();
+		$page_block = $this->get_page_block();
+		$get_tgt_uri = $this->get_tgt_uri();
+		$echostr = &lt;&lt;&lt; END_BLOCK
+&lt;div id="headTitle">
+&lt;h2>都道府県一覧&lt;/h2>
+&lt;/div>
+&lt;!-- コンテンツ　-->
+&lt;div id="contents">
+&lt;form name="form1" action="{$get_tgt_uri}" method="post" >
+&lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
+&lt;p>{$page_block}&lt;/p>
+&lt;table>
+&lt;tr>
+&lt;th>都道府県ID&lt;/th>
+&lt;th>都道府県名&lt;/th>
+&lt;th>操作&lt;/th>
+&lt;/tr>
+{$prefec_rows}
+&lt;/table>
+&lt;input type="hidden" name="func" value="" >
+&lt;input type="hidden" name="param" value="" >
+&lt;/form>
+&lt;p>&nbsp;&lt;/p>
+&lt;/div>
+&lt;!-- /コンテンツ　-->
+END_BLOCK;
+		echo $echostr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
+
+//ページを作成
+$page_obj = new cnode();
+//ヘッダ追加
+$page_obj->add_child(cutil::create('cheader'));
+//本体追加
+$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+//フッタ追加
+$page_obj->add_child(cutil::create('cfooter'));
+//構築時処理
+$page_obj->create();
+//本体実行（表示前処理）
+$cmain_obj->execute();
+//ページ全体を表示
+$page_obj->display();
+
+?>
+</pre>
+</div>
+　まず、phpブロックの最初に
+<div class="box1">
+<pre>
+//ライブラリをインクルード
+require_once("common/libs.php");
+</pre>
+</div>
+　これで、データベースアクセスを含め、<strong>PHPBase</strong>の準備が整います。<br>
+<h4>１、ブロック</h4>
+　一般的なホームページは<strong>ヘッダ、本文、フッタ</strong>など、ブロックに分けることができます。一般的には<strong>ヘッダやフッタ</strong>は複数ページで共通して使うことができます。そうすることで、個別ページでは、その内容のみに集中して作成することができます。<br>
+　<strong>PHPBase</strong>では、<strong>ノードとブランチ</strong>という考え方で<strong>ブロック</strong>を作成することができます。<strong>ノード</strong>には<strong>子ノード</strong>や<strong>子ブランチ</strong>を作ることができます。<br>
+　<strong>sources/prefecture_list.php</strong>では<strong>cmain_node</strong>という<strong>本体ノードクラス</strong>を持っています<strong>ノードクラス</strong>は一般的には<strong>cnodeクラス</strong>を継承して作成します。
+　本体を<strong>ブランチクラス</strong>で作成することもできます。ですが製作途中で、<strong>子ノード</strong>や<strong>子ブランチ</strong>を加えたいときに<strong>ノードクラス</strong>で作成しておいたほうが便利です。（後ほど説明しますが、ヘッダクラスやフッタクラスは、動作が単純なので<strong>ブランチクラス</strong>で作成されています）。<br>
+<h4>２、ページオブジェクト</h4>
+　本体のブロックである<strong>cmain_nodeノード</strong>クラスの説明の前に、このページ全体をまとめる<strong>ページオブジェクト</strong>について説明します。<br>
+　ソースの下のほうに記述がある
+<div class="box1">
+<pre>
+//ページを作成
+$page_obj = new cnode();
+//ヘッダ追加
+$page_obj->add_child(cutil::create('cheader'));
+//本体追加
+$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+//フッタ追加
+$page_obj->add_child(cutil::create('cfooter'));
+//構築時処理
+$page_obj->create();
+//本体実行（表示前処理）
+$cmain_obj->execute();
+//ページ全体を表示
+$page_obj->display();
+</pre>
+</div>
+　が<strong>ページオブジェクト（都道府県一覧）</strong>を作成して、このページに必要な動作を記述している部分です。<strong>ページオブジェクト</strong>である<strong>$page_obj</strong>は<strong>cnodeクラスのインスタンス</strong>として作成します。<strong>ページオブジェクト</strong>自体は多くの個別処理をするわけではないので<strong>ノードクラス（親クラス）</strong>である<strong>cnode</strong>のインスタンスで十分です。このオブジェクトは<strong>子ノードや子ブランチ</strong>をページに追加して、それぞれの構築時処理用の関数を呼び出します。<br>
+　その後、本体のオブジェクトである<strong>$cmain_obj</strong>の<strong>execute()関数</strong>を呼び出して、本体個別の処理を実行します。最後に<strong>$page_obj->display()関数</strong>を呼び出して、ページ全体を表示します。<br>
+　もう少し細かく見ていきましょう。
+<div class="box1">
+<pre>
+//ページを作成
+$page_obj = new cnode();
+</pre>
+</div>
+　で、このページ（都道府県一覧）のインスタンスを作成します。<br>
+　このページは<strong>ヘッダ、本体、フッタ</strong>の3つのブロックで構成されています。まず
+<div class="box1">
+<pre>
+//ヘッダ追加
+$page_obj->add_child(cutil::create('cheader'));
+</pre>
+</div>
+　でヘッダブロックを追加します。<strong>add_child()関数</strong>は<strong>cnodeクラス</strong>の関数で、<strong>子ノードまたは子ブランチ</strong>を登録します。<br>
+　HTMLは、上方から記述されますので、記述の順番に<strong>add_child()関数</strong>を呼び出します。<br>
+　<strong>add_child()関数</strong>の引数は、ノードまたはブランチのインスタンスです。<strong>cutil::create('cheader')</strong>と記述することで、<strong>cheaderクラスのインスタンス</strong>を作成します。<br>
+　<strong>cutil::create()関数</strong>は<strong>common/function.php</strong>に、記述があります。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  オブジェクト作成
+	@param[in]	$class_name クラス名
+	@param[in]	$param パラメータ
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public static function create($class_name,$param = null){
+		$obj = null;
+		if($param != null){
+			$obj = new $class_name($param);
+		}
+		else{
+			$obj = new $class_name();
+		}
+		return $obj;
+	}
+</pre>
+</div>
+　のような内容です。PHPでは<strong>クラス名（文字列）</strong>を使って、そのインスタンスを作成できるので、大変便利です。コンストラクタの引数も渡すことができます。<br>
+　その場合<strong>$param</strong>に配列を渡すと、複雑な初期化も可能になるでしょう。<br>
+　このようおなかたちで作成された<strong>cheaderクラスのインスタンス</strong>は、そのまま<strong>$page_objの子ブランチ</strong>として登録されます。<br>
+　<strong>cheaderクラス</strong>は<strong>common/contents_blocks.php</strong>に記述があります。<strong>common/contents_blocks.php</strong>は<strong>コンテンツDB</strong>同様に、各サイトごとに定義する必要があります。複数のページで使いまわしするブロックを記述します。<strong>cheaderクラス</strong>は以下のような内容です。
+<div class="box1">
+<pre>
+//--------------------------------------------------------------------------------------
+///	ヘッダブランチ
+//--------------------------------------------------------------------------------------
+class cheader extends cbranch {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		$echo_str = &lt;&lt;&lt; END_BLOCK
+&lt;html lang="ja">
+&lt;head>
+&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+&lt;link href="css/main.css" rel="stylesheet" type="text/css">
+&lt;title>PHPBaseサンプル&lt;/title>
+&lt;/head>
+&lt;body>
+&lt;!-- 全体コンテナ　-->
+&lt;div id="container">
+&lt;div id="pan">
+&lt;table >
+&lt;tr>
+&lt;td>&lt;a href="index.php">メインメニュー&lt;/a>&lt;/td>
+&lt;td>&lt;a href="prefecture_list.php">都道府県管理&lt;/a>&lt;/td>
+&lt;td>&lt;a href="member_list.php">メンバー管理&lt;/a>&lt;/td>
+&lt;/tr>
+&lt;/table>
+&lt;/div>
+END_BLOCK;
+		echo $echo_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
+</pre>
+</div>
+　このように<strong>display()関数</strong>のみ記述されています。各ブロッククラスの<strong>display()関数</strong>には、HTMLの出力を記述します。ここでは、HTMLタグとか、グローバルメニューが記述されています。<br>
+　ヘッダに続いて
+<div class="box1">
+<pre>
+//本体追加
+$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+</pre>
+</div>
+　があります。ここでは、このPHPに記述がある、いわゆる<strong>本体（cmain_node）</strong>を構築して、<strong>$page_objの子ノード</strong>として登録します。<br>
+　後ほどメンバ関数を呼び出す関係で<strong>$cmain_obj</strong>にインスタンスを保持しておきます。<br>
+　その後<strong>フッタ</strong>を追加し、このページのブロック登録は終了です。<br>
+　ブロックの登録が終わりましたら
+<div class="box1">
+<pre>
+//構築時処理
+$page_obj->create();
+</pre>
+</div>
+　で登録された各子ブロックの<strong>create()関数</strong>を呼び出します。各子ブロックの<strong>create()関数</strong>では、もしあれば。さらに<strong>子ノードか子ブランチ</strong>を登録することができます。<br>
+　その後
+<div class="box1">
+<pre>
+//本体実行（表示前処理）
+$cmain_obj->execute();
+</pre>
+</div>
+　で、本体の<strong>execute()関数</strong>を呼び出します。ここでは<strong>$_POSTコマンド</strong>の処理を行います。この一覧ページでは<strong>行削除</strong>処理も行いますので、<strong>削除コマンド</strong>も記述します。<br>
+　最後に
+<div class="box1">
+<pre>
+//ページ全体を表示
+$page_obj->display();
+</pre>
+</div>
+　で、HTMLを出力します。この関数呼び出しで、ページに登録されているすべての<strong>子ノードや子ブランチ</strong>の<strong>display()関数</strong>が呼び出されます。
+<h4>３、本体ノード</h4>
+　それでは、本体のノードである<strong>cmain_nodeクラス</strong>の説明をします。<br>
+　まず<strong>create()関数</strong>ですが、子ノードや子ブランチはないので、記述がありません。空の関数のみ用意してます。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+	}
+</pre>
+</div>
+　続いて<strong>execute()関数</strong>ですが、以下の内容です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  本体実行（表示前処理）
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function execute(){
+		global $err_array;
+		global $err_flag;
+		global $page_obj;
+		if(is_null($page_obj)){
+			return;
+		}
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+				case "del":
+					//削除操作
+					$this->deljob();
+					//再読み込みのためにリダイレクト
+					cutil::redirect_exit($_SERVER['PHP_SELF']);
+				break;
+				default:
+					echo 'エラー';
+					exit();
+				break;
+			}
+		}
+		//データの読み込み
+		$this->readdata();
+	}
+</pre>
+</div>
+　ここでは、削除の場合の処理が記述され、その場合は、削除後に再読み込みを行います。<br>
+　<strong>PHPBase</strong>では<strong>コマンド</strong>の概念があります。これは<strong>$_POST</strong>があった場合の処理として、<strong>$_POST['func']</strong>及び<strong>$_POST['param']</strong>に、どういうコマンドがj発行されたかを記述します。<strong>PHPBase</strong>は基本的に<strong>自己参照型ページ</strong>として記述しますので、<strong>form</strong>の<strong>action</strong>は自分自身を指し、<strong>name</strong>は<strong>form1</strong>という固定の名前を持ちます。ここを統一することで、効率の良いサイトを構築できます。以下は、<strong>form</strong>の終了タグの直前の記述です。
+<div class="box1">
+<pre>
+&lt;input type="hidden" name="func" value="" >
+&lt;input type="hidden" name="param" value="" >
+&lt;/form>
+</pre>
+</div>
+　このように<strong>input</strong>の<strong>hiddenタイプ</strong>により<strong>funcとparam変数</strong>が定義されています。<br>
+　<strong>execute()関数内</strong>では
+<div class="box1">
+<pre>
+		if(isset($_POST['func'])){
+</pre>
+</div>
+　という記述で<strong>コマンドが発行されたら</strong>の条件式が記述されています。つまり、普通に<strong>$_GET</strong>アクセスするだけなら、コマンド処理は行いません。<br>
+　<strong>execute()関数内</strong>から呼ばれる<strong>$this->deljob();</strong>は以下のような記述です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	削除
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function deljob(){
+		if(isset($_POST['param']) && $_POST['param'] > 0){
+			$where = 'prefecture_id = :prefecture_id';
+			$wherearr[':prefecture_id'] = (int)$_POST['param'];
+			$change_obj = new crecord();
+			$change_obj->delete_core(false,'prefecture',$where,$wherearr,false);
+		}
+	}
+</pre>
+</div>
+　ここでは<strong>$_POST['param']</strong>が有効だったときのみ操作しています。<br>
+　ここでも、<strong>プリペアドステートメント</strong>を使用します。<strong>プレースホルダ</strong>は<strong>:prefecture_id</strong>を使用し、それは、<strong>削除ボタン</strong>で設定されます。<br>
+　<strong>$where</strong>は<strong>プレースホルダ付きの条件式</strong>、<strong>$wherearr</strong>はデータの配列です。<br>
+　<strong>$change_obj</strong>は<strong>crecord</strong>のインスタンスです。<strong>コンテンツDB</strong>のところで紹介した<strong>SELECT文を記述するクラス</strong>の親クラスに当たりますが、直接構築することもできます。そのメンバ関数<strong>delete_core()関数</strong>には<strong>削除するテーブル、プレースホルダ付きの条件式、データの配列</strong>を渡します。<br>
+<h4>４、データの読み込み</h4>
+　都道府県データの読み込みは<strong>execute()関数</strong>から呼ばれる<strong>readdata()関数</strong>です。内容は以下になります。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	データ読み込み
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function readdata(){
+		global $limit;
+		global $prefecture_rows;
+		global $page;
+		$obj = new cprefecture();
+		$from = ($page - 1) * $limit;
+		$prefecture_rows = $obj->get_all(false,$from,$limit);
+	}
+</pre>
+</div>
+　ここでようやく<strong>コンテンツDB</strong>に書かれたクラスを構築します。<br>
+<div class="box1">
+<pre>
+		$obj = new cprefecture();
+</pre>
+</div>
+　で構築し、その<strong>get_all()関数</strong>を呼び出します。<br>
+　パラメータは<strong>$from</strong>を動的に作り出し、<strong>１ページ上限行数</strong>の<strong>$limit</strong>を渡します。結果は<strong>$prefecture_rows</strong>に代入され、それは<strong>display()関数</strong>で利用されます。
+<h4>５、表示</h4>
+　表示は<strong>display()関数</strong>で処理されます。内容は以下です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		$prefec_rows = $this->get_prefecture_rows();
+		$page_block = $this->get_page_block();
+		$get_tgt_uri = $this->get_tgt_uri();
+		$echostr = &lt;&lt;&lt; END_BLOCK
+&lt;div id="headTitle">
+&lt;h2>都道府県一覧&lt;/h2>
+&lt;/div>
+&lt;!-- コンテンツ　-->
+&lt;div id="contents">
+&lt;form name="form1" action="{$get_tgt_uri}" method="post" >
+&lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
+&lt;p>{$page_block}&lt;/p>
+&lt;table>
+&lt;tr>
+&lt;th>都道府県ID&lt;/th>
+&lt;th>都道府県名&lt;/th>
+&lt;th>操作&lt;/th>
+&lt;/tr>
+{$prefec_rows}
+&lt;/table>
+&lt;input type="hidden" name="func" value="" >
+&lt;input type="hidden" name="param" value="" >
+&lt;/form>
+&lt;p>&nbsp;&lt;/p>
+&lt;/div>
+&lt;!-- /コンテンツ　-->
+END_BLOCK;
+		echo $echostr;
+	}
+</pre>
+</div>
+　ここでは、
+<div class="box1">
+<pre>
+		$prefec_rows = $this->get_prefecture_rows();
+		$page_block = $this->get_page_block();
+		$get_tgt_uri = $this->get_tgt_uri();
+</pre>
+</div>
+　により、各変数にHTML成形された文字列を取得し、<strong>$echostr</strong>に変数展開された最終的なHTML文字列を出力します。<br>
+　ここで注目したいのは<strong>get_page_block()関数</strong>で取得する<strong>ページャー</strong>です。以下が内容です。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	ページャーを得る
+	@return	ページャー文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_page_block(){
+		global $limit;
+		global $page;
+		$obj = new cprefecture();
+		$allcount = $obj->get_all_count(false);
+		$ctl = new cpager($_SERVER['PHP_SELF'],$allcount,$limit);
+		return $ctl->get('page',$page);
+	}
+</pre>
+</div>
+　この記述で、<strong>ページ分け</strong>のリンクを取得できます。<br>
+　<strong>PHPBase</strong>には<strong>コントロールクラス</strong>というのがあります。それらは<strong>common/controls.php</strong>および<strong>common/controls_ex.php</strong>に定義されていて、ここに<strong>テキストボックス</strong>や<strong>プルダウンリスト、ラジオボタン、チェックボックス</strong>といった、HTMLのform内に記述される<strong>入力オブジェクト</strong>がカプセル化しています。<br>
+　<strong>ページャー</strong>もその一つで、都道府県詳細ページでは<strong>テキストボックスコントロール</strong>の使用例があります。<br>
+　さらには、<strong>メンバー管理</strong>のサンプル（メインメニューからいける）には、様々なコントロール使用例が記述されています。
+<h4>６、詳細ページへのリンク</h4>
+　詳細ページには、各行の都道府県名をクリックすると行けるわけですが<strong>$this->get_prefecture_rows()呼び出し</strong>で返されるHTML文字列に具体的な内容があります。以下のように<strong>prefecture_detail.php</strong>に、<strong>都道府県ID</strong>を<strong>GET</strong>で渡しています。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県のリストを得る
+	@return	都道府県リストの文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_prefecture_rows(){
+		global $prefecture_rows;
+		global $page;
+		$retstr = '';
+		$urlparam = '&page=' . $page;
+		$rowscount = 1;
+		if(count($prefecture_rows) > 0){
+			foreach($prefecture_rows as $key => $value){
+				$javamsg =  '【' . $value['prefecture_name'] . '】';
+				$nobottom = '';
+				if($rowscount == count($prefecture_rows)){
+					$nobottom = ' nobottom';
+				}
+				$str =&lt;&lt;&lt;END_BLOCK
+&lt;tr>
+&lt;td width="20%" class="center{$nobottom}">
+{$value['prefecture_id']}
+&lt;/td>
+&lt;td width="65%" class="center{$nobottom}">
+&lt;a href="prefecture_detail.php?pid={$value['prefecture_id']}{$urlparam}">{$value['prefecture_name']}&lt;/a>
+&lt;/td>
+&lt;td width="15%" class="center{$nobottom}">
+&lt;input type="button" value="削除確認" onClick="del_func_form({$value['prefecture_id']},'{$javamsg}');" />
+&lt;/td>
+&lt;/tr>
+END_BLOCK;
+			$retstr .= $str;
+			$rowscount++;
+			}
+		}
+		else{
+			$retstr =&lt;&lt;&lt;END_BLOCK
+&lt;tr>&lt;td colspan="3" class="nobottom">都道府県が見つかりません&lt;/td>&lt;/tr>
+END_BLOCK;
+		}
+		return $retstr;
+	}
+</pre>
+</div>
+　ここで<strong>削除ボタン</strong>の扱いですが、<strong>onClick="del_func_form({$value['prefecture_id']},'{$javamsg}');"</strong>という記述で、<strong>JAVASCRIPT</strong>の関数を呼び出しています。<strong>JAVASCRIPT</strong>は<strong>jsディレクトリ</strong>の<strong>scripts.js</strong>に記述されています。以下が内容です。
+<div class="box1">
+<pre>
+function del_func_form(pm,mess){
+    var message = "本当に";
+    message += mess;
+    message += "を削除しますか？";
+    if(confirm(message)){
+        document.form1.target = "_self";
+        document.form1.func.value = 'del';
+        document.form1.param.value = pm;
+        document.form1.submit();
+    }
+}
+</pre>
+</div>
+　<strong>JAVASCRIPT</strong>はこのほかに<strong>詳細ページ</strong>で使用される<strong>set_func_form()関数</strong>があります。
+<h4>７、新規の形での詳細ページへのリンク</h4>
+　こちらは<strong>display()関数</strong>内に記述があります。
+<div class="box1">
+<pre>
+&lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
+</pre>
+</div>
+　詳細ページである<strong>prefecture_detail.php</strong>はGET引数無しで呼び出すと<strong>新規</strong>の状態を表示します。<br />
+</div>
+<!-- /コンテンツ　-->
+<hr>
+<!-- フッタ　-->
+<ul class="foot_navi">
+<li><a href="00_01.html">前へ</a></li>
+<li><a href="index.html">目次</a></li>
+<li><a href="00_03.html">次へ</a></li>
+</ul>
+<!-- /フッタ　-->
+
+
+</div>
+<!-- /全体コンテナ　-->
+</body>
+</html>
