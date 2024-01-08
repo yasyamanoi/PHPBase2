@@ -27,4 +27,4 @@ https://opensource.org/licenses/mit-license.php
 以下、主な更新履歴です（細かいのは、gitなのでレポジトリ内を参照ください）  
 2024年1月8日　初期公開  
 
-　　　　　　　　　　　　　　　　　　　　　2024年早春　山ノ井　靖（WiZ情報科非常勤講師：PHP、C/C++担当）
+　　　　　　　　　　　　　　　　　2024年早春　山ノ井　靖（WiZ情報科非常勤講師：PHP、C/C++担当）
