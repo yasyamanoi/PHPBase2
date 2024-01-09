@@ -283,11 +283,10 @@ require_once("common/libs.php");
 </pre>
 </div>
 　これで、データベースアクセスを含め、<strong>PHPBase2</strong>の準備が整います。<br>
-<h4>１、ブロック</h4>
+<h4>１、ノード</h4>
 　一般的なホームページは<strong>ヘッダ、本文、フッタ</strong>など、ブロックに分けることができます。一般的には<strong>ヘッダやフッタ</strong>は複数ページで共通して使うことができます。そうすることで、個別ページでは、その内容のみに集中して作成することができます。<br>
-　<strong>PHPBase2</strong>では、<strong>ノードとブランチ</strong>という考え方で<strong>ブロック</strong>を作成することができます。<strong>ノード</strong>には<strong>子ノード</strong>や<strong>子ブランチ</strong>を作ることができます。<br>
+　<strong>PHPBase2</strong>では、<strong>ノード</strong>という考え方で<strong>ブロック</strong>を作成することができます。<strong>ノード</strong>には<strong>子ノード</strong>を作ることができます。<br>
 　<strong>sources/prefecture_list.php</strong>では<strong>cmain_node</strong>という<strong>本体ノードクラス</strong>を持っています<strong>ノードクラス</strong>は一般的には<strong>cnodeクラス</strong>を継承して作成します。
-　本体を<strong>ブランチクラス</strong>で作成することもできます。ですが製作途中で、<strong>子ノード</strong>や<strong>子ブランチ</strong>を加えたいときに<strong>ノードクラス</strong>で作成しておいたほうが便利です。（後ほど説明しますが、ヘッダクラスやフッタクラスは、動作が単純なので<strong>ブランチクラス</strong>で作成されています）。<br>
 <h4>２、ページオブジェクト</h4>
 　本体のブロックである<strong>cmain_nodeノード</strong>クラスの説明の前に、このページ全体をまとめる<strong>ページオブジェクト</strong>について説明します。<br>
 　ソースの下のほうに記述がある
@@ -309,7 +308,7 @@ $cmain_obj->execute();
 $page_obj->display();
 </pre>
 </div>
-　が<strong>ページオブジェクト（都道府県一覧）</strong>を作成して、このページに必要な動作を記述している部分です。<strong>ページオブジェクト</strong>である<strong>$page_obj</strong>は<strong>cnodeクラスのインスタンス</strong>として作成します。<strong>ページオブジェクト</strong>自体は多くの個別処理をするわけではないので<strong>ノードクラス（親クラス）</strong>である<strong>cnode</strong>のインスタンスで十分です。このオブジェクトは<strong>子ノードや子ブランチ</strong>をページに追加して、それぞれの構築時処理用の関数を呼び出します。<br>
+　が<strong>ページオブジェクト（都道府県一覧）</strong>を作成して、このページに必要な動作を記述している部分です。<strong>ページオブジェクト</strong>である<strong>$page_obj</strong>は<strong>cnodeクラスのインスタンス</strong>として作成します。<strong>ページオブジェクト</strong>自体は多くの個別処理をするわけではないので<strong>ノードクラス（親クラス）</strong>である<strong>cnode</strong>のインスタンスで十分です。このオブジェクトは<strong>子ノード</strong>をページに追加して、それぞれの構築時処理用の関数を呼び出します。<br>
 　その後、本体のオブジェクトである<strong>$cmain_obj</strong>の<strong>execute()関数</strong>を呼び出して、本体個別の処理を実行します。最後に<strong>$page_obj->display()関数</strong>を呼び出して、ページ全体を表示します。<br>
 　もう少し細かく見ていきましょう。
 <div class="box1">
@@ -326,9 +325,9 @@ $page_obj = new cnode();
 $page_obj->add_child(cutil::create('cheader'));
 </pre>
 </div>
-　でヘッダブロックを追加します。<strong>add_child()関数</strong>は<strong>cnodeクラス</strong>の関数で、<strong>子ノードまたは子ブランチ</strong>を登録します。<br>
+　でヘッダブロックを追加します。<strong>add_child()関数</strong>は<strong>cnodeクラス</strong>の関数で、<strong>子ノード</strong>を登録します。<br>
 　HTMLは、上方から記述されますので、記述の順番に<strong>add_child()関数</strong>を呼び出します。<br>
-　<strong>add_child()関数</strong>の引数は、ノードまたはブランチのインスタンスです。<strong>cutil::create('cheader')</strong>と記述することで、<strong>cheaderクラスのインスタンス</strong>を作成します。<br>
+　<strong>add_child()関数</strong>の引数は、ノードまたのインスタンスです。<strong>cutil::create('cheader')</strong>と記述することで、<strong>cheaderクラスのインスタンス</strong>を作成します。<br>
 　<strong>cutil::create()関数</strong>は<strong>common/function.php</strong>に、記述があります。
 <div class="box1">
 <pre>
@@ -354,14 +353,14 @@ $page_obj->add_child(cutil::create('cheader'));
 </div>
 　のような内容です。PHPでは<strong>クラス名（文字列）</strong>を使って、そのインスタンスを作成できるので、大変便利です。コンストラクタの引数も渡すことができます。<br>
 　その場合<strong>$param</strong>に配列を渡すと、複雑な初期化も可能になるでしょう。<br>
-　このようおなかたちで作成された<strong>cheaderクラスのインスタンス</strong>は、そのまま<strong>$page_objの子ブランチ</strong>として登録されます。<br>
+　このようなかたちで作成された<strong>cheaderクラスのインスタンス</strong>は、そのまま<strong>$page_objの子ノード</strong>として登録されます。<br>
 　<strong>cheaderクラス</strong>は<strong>common/contents_blocks.php</strong>に記述があります。<strong>common/contents_blocks.php</strong>は<strong>コンテンツDB</strong>同様に、各サイトごとに定義する必要があります。複数のページで使いまわしするブロックを記述します。<strong>cheaderクラス</strong>は以下のような内容です。
 <div class="box1">
 <pre>
 //--------------------------------------------------------------------------------------
-///	ヘッダブランチ
+///	ヘッダノード
 //--------------------------------------------------------------------------------------
-class cheader extends cbranch {
+class cheader extends cnode {
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief	コンストラクタ
@@ -438,7 +437,7 @@ $page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
 $page_obj->create();
 </pre>
 </div>
-　で登録された各子ブロックの<strong>create()関数</strong>を呼び出します。各子ブロックの<strong>create()関数</strong>では、もしあれば。さらに<strong>子ノードか子ブランチ</strong>を登録することができます。<br>
+　で登録された各子ブロックの<strong>create()関数</strong>を呼び出します。各子ブロックの<strong>create()関数</strong>では、もしあれば。さらに<strong>子ノード</strong>を登録することができます。<br>
 　その後
 <div class="box1">
 <pre>
@@ -454,10 +453,10 @@ $cmain_obj->execute();
 $page_obj->display();
 </pre>
 </div>
-　で、HTMLを出力します。この関数呼び出しで、ページに登録されているすべての<strong>子ノードや子ブランチ</strong>の<strong>display()関数</strong>が呼び出されます。
+　で、HTMLを出力します。この関数呼び出しで、ページに登録されているすべての<strong>子ノード</strong>の<strong>display()関数</strong>が呼び出されます。
 <h4>３、本体ノード</h4>
 　それでは、本体のノードである<strong>cmain_nodeクラス</strong>の説明をします。<br>
-　まず<strong>create()関数</strong>ですが、子ノードや子ブランチはないので、記述がありません。空の関数のみ用意してます。
+　まず<strong>create()関数</strong>ですが、子ノードはないので、記述がありません。空の関数のみ用意してます。
 <div class="box1">
 <pre>
 	//--------------------------------------------------------------------------------------

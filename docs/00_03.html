@@ -353,7 +353,7 @@ $page_obj->display();
 ?>
 </pre>
 </div>
-　この項では、前項で紹介した<strong>ブロック、ノード、ブランチ</strong>などの関連と<strong>ページオブジェクト</strong>についての説明はしません。調べる場合は前項を確認ください。
+　この項では、前項で紹介した<strong>ノード</strong>の関連と<strong>ページオブジェクト</strong>についての説明はしません。調べる場合は前項を確認ください。
 <h4>１，コンストラクタ</h4>
 　詳細ページの本体クラス<strong>cmain_node</strong>のコンストラクタには、記述があります。
 <div class="box1">
@@ -477,7 +477,7 @@ $page_obj->display();
 </pre>
 </div>
 　を行います。<strong>$page_obj</strong>の<strong>paramchk()関数</strong>を呼び出すのがポイントです。<br>
-　こうすることで、本体クラスだけではなく、設定されているすべてのノードやブランチの<strong>paramchk()関数</strong>を呼び出すことができます。<br>
+　こうすることで、本体クラスだけではなく、設定されているすべてのノードの<strong>paramchk()関数</strong>を呼び出すことができます。<br>
 　各クラスの<strong>paramchk()関数</strong>では、入力項目に不備があった場合に、グローバル領域の<strong>$err_flag</strong>を<strong>0以外</strong>に設定し、同じくグローバル領域にある<strong>$err_array</strong>配列に、自分自身が抱えるコントロールなどのエラー文字列を登録します。<br>
 　本体ノード（cmain_nodeクラス）の<strong>paramchk()関数</strong>は以下のようになっています。
 <div class="box1">

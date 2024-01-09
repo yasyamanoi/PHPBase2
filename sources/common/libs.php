@@ -14,12 +14,12 @@ require_once("controls.php");
 require_once("controls_ex.php");
 //PDO接続初期化
 require_once("pdointerface.php");
-//ブロッククラス
-require_once("block.php");
+//ノードクラス
+require_once("node.php");
 //他ユーティリティ
 require_once("contents_func.php");
 //コンテンツに合わせ定義されるもの
 require_once("contents_db.php");
-require_once("contents_blocks.php");
+require_once("contents_nodes.php");
 
 
