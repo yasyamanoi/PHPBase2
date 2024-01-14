@@ -217,25 +217,23 @@ END_BLOCK;
 	*/
 	//--------------------------------------------------------------------------------------
 	public function display(){
-		$prefec_rows = $this->get_prefecture_rows();
-		$page_block = $this->get_page_block();
-		$get_tgt_uri = $this->get_tgt_uri();
-		$echostr = &lt;&lt;&lt; END_BLOCK
+//PHPブロック終了
+?>
 &lt;div id="headTitle">
 &lt;h2>都道府県一覧&lt;/h2>
 &lt;/div>
 &lt;!-- コンテンツ　-->
 &lt;div id="contents">
-&lt;form name="form1" action="{$get_tgt_uri}" method="post" >
+&lt;form name="form1" action="&lt;?= $this->get_tgt_uri(); ?>" method="post" >
 &lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
-&lt;p>{$page_block}&lt;/p>
+&lt;p>&lt;?= $this->get_page_block(); ?>&lt;/p>
 &lt;table>
 &lt;tr>
 &lt;th>都道府県ID&lt;/th>
 &lt;th>都道府県名&lt;/th>
 &lt;th>操作&lt;/th>
 &lt;/tr>
-{$prefec_rows}
+&lt;?= $this->get_prefecture_rows(); ?>
 &lt;/table>
 &lt;input type="hidden" name="func" value="" >
 &lt;input type="hidden" name="param" value="" >
@@ -243,8 +241,8 @@ END_BLOCK;
 &lt;p>&nbsp;&lt;/p>
 &lt;/div>
 &lt;!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+&lt;?php 
+//PHPブロック再開
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -583,25 +581,23 @@ $page_obj->display();
 	*/
 	//--------------------------------------------------------------------------------------
 	public function display(){
-		$prefec_rows = $this->get_prefecture_rows();
-		$page_block = $this->get_page_block();
-		$get_tgt_uri = $this->get_tgt_uri();
-		$echostr = &lt;&lt;&lt; END_BLOCK
+//PHPブロック終了
+?>
 &lt;div id="headTitle">
 &lt;h2>都道府県一覧&lt;/h2>
 &lt;/div>
 &lt;!-- コンテンツ　-->
 &lt;div id="contents">
-&lt;form name="form1" action="{$get_tgt_uri}" method="post" >
+&lt;form name="form1" action="&lt;?= $this->get_tgt_uri(); ?>" method="post" >
 &lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
-&lt;p>{$page_block}&lt;/p>
+&lt;p>&lt;?= $this->get_page_block(); ?>&lt;/p>
 &lt;table>
 &lt;tr>
 &lt;th>都道府県ID&lt;/th>
 &lt;th>都道府県名&lt;/th>
 &lt;th>操作&lt;/th>
 &lt;/tr>
-{$prefec_rows}
+&lt;?= $this->get_prefecture_rows(); ?>
 &lt;/table>
 &lt;input type="hidden" name="func" value="" >
 &lt;input type="hidden" name="param" value="" >
@@ -609,21 +605,46 @@ $page_obj->display();
 &lt;p>&nbsp;&lt;/p>
 &lt;/div>
 &lt;!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+&lt;?php 
+//PHPブロック再開
 	}
 </pre>
 </div>
-　ここでは、
+　まず、ここでは、最初に
 <div class="box1">
 <pre>
-		$prefec_rows = $this->get_prefecture_rows();
-		$page_block = $this->get_page_block();
-		$get_tgt_uri = $this->get_tgt_uri();
+//PHPブロック終了
+?>
 </pre>
 </div>
-　により、各変数にHTML成形された文字列を取得し、<strong>$echostr</strong>に変数展開された最終的なHTML文字列を出力します。<br>
-　ここで注目したいのは<strong>get_page_block()関数</strong>で取得する<strong>ページャー</strong>です。以下が内容です。
+　で、PHPブロック終了させ、<strong>display()関数</strong>の最後で
+<div class="box1">
+<pre>
+&lt;?php 
+//PHPブロック再開
+</pre>
+</div>
+　させています。こうすることで、<strong>get_page_block()関数</strong>などを、HTML内で呼び出すことができます。<br>
+　呼び出す方法としては。<strong>&lt;?= $this->get_page_block(); ?></strong>のように、
+<div class="box1">
+<pre>
+&lt;?= ?>
+</pre>
+</div>
+　のように<strong>echo付きのPHPブロック</strong>が使えます。
+<div class="box1">
+<pre>
+&lt;?= 'abcde'; ?>
+</pre>
+</div>
+は
+<div class="box1">
+<pre>
+&lt;?php echo 'abcde'; ?>
+</pre>
+</div>
+　と同じ意味を持ちます。文字列を返す関数であれば、関数呼び出しも可能です。<br>
+　また、さらに注目したいのは<strong>get_page_block()関数</strong>で取得する<strong>ページャー</strong>です。以下が内容です。
 <div class="box1">
 <pre>
 	//--------------------------------------------------------------------------------------

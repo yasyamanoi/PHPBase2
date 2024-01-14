@@ -394,8 +394,6 @@ END_BLOCK;
 		}
 		return $ret_str;
 	}
-
-
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  表示(継承して使用)
@@ -404,64 +402,56 @@ END_BLOCK;
 	//--------------------------------------------------------------------------------------
 	public function display(){
 		global $member_id;
-		$err_flag = $this->get_err_flag();
-		$member_id_txt = $this->get_member_id_txt();
-		$member_name = $this->get_member_name();
-		$prefecture_select = $this->get_prefecture_select();
-		$member_address = $this->get_member_address();
-		$member_gender_radio = $this->get_member_gender_radio();
-		$fruits_match_check = $this->get_fruits_match_check();
-		$member_comment = $this->get_member_comment();
-		$switch = $this->get_switch();
-		$echostr = <<< END_BLOCK
+//PHPブロック終了
+?>
 <div id="headTitle">
 <h2>メンバー詳細</h2>
 </div>
 <!-- コンテンツ　-->
 <div id="contents">
-{$err_flag}
-<form name="form1" action="{$_SERVER['PHP_SELF']}" method="post" >
+<?= $this->get_err_flag(); ?>
+<form name="form1" action="<?= $_SERVER['PHP_SELF']; ?>" method="post" >
 <a href="member_list.php">一覧に戻る</a><br />
 <span class="red">＊</span>は必須項目
 <table>
 <tr>
 <th>ID</th>
-<td width="70%">{$member_id_txt}</td>
+<td width="70%"><?= $this->get_member_id_txt(); ?></td>
 </tr>
 <tr>
 <th>メンバー名<span class="red">＊</span></th>
-<td width="70%">{$member_name}</td>
+<td width="70%"><?= $this->get_member_name(); ?></td>
 </tr>
 <tr>
 <th>都道府県<span class="red">＊</span></th>
-<td width="70%">{$prefecture_select}</td>
+<td width="70%"><?= $this->get_prefecture_select(); ?></td>
 </tr>
 <tr>
 <th>市区郡町村以下<span class="red">＊</span></th>
-<td width="70%">{$member_address}</td>
+<td width="70%"><?= $this->get_member_address(); ?></td>
 </tr>
 <tr>
 <th>性別<span class="red">＊</span></th>
-<td width="70%">{$member_gender_radio}</td>
+<td width="70%"><?= $this->get_member_gender_radio(); ?></td>
 </tr>
 <tr>
 <th>好きな果物</th>
-<td width="70%">{$fruits_match_check}</td>
+<td width="70%"><?= $this->get_fruits_match_check(); ?></td>
 </tr>
 <tr>
 <th class="bobottom">コメント</th>
-<td width="70%" class="bobottom">{$member_comment}</td>
+<td width="70%" class="bobottom"><?= $this->get_member_comment(); ?></td>
 </tr>
 </table>
 <input type="hidden" name="func" value="" />
 <input type="hidden" name="param" value="" />
-<input type="hidden" name="member_id" value="{$member_id}" />
-<p class="center">{$switch}</p>
+<input type="hidden" name="member_id" value="<?= $member_id; ?>" />
+<p class="center"><?= $this->get_switch(); ?></p>
 </form>
 </div>
 <!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+<?php 
+//PHPブロック再開
 	}
 	//--------------------------------------------------------------------------------------
 	/*!

@@ -221,7 +221,7 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief	都道府県IDの取得(新規の場合は<strong>新規</strong>)
+	@brief	都道府県IDの取得(新規の場合は「新規」)
 	@return	都道府県ID
 	*/
 	//--------------------------------------------------------------------------------------
@@ -281,8 +281,6 @@ END_BLOCK;
 		}
 		return $ret_str;
 	}
-
-
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief  表示(継承して使用)
@@ -291,38 +289,35 @@ END_BLOCK;
 	//--------------------------------------------------------------------------------------
 	public function display(){
 		global $prefecture_id;
-		$err_flag = $this->get_err_flag();
-		$prefecture_id_txt = $this->get_prefecture_id_txt();
-		$prefecture_name = $this->get_prefecture_name();
-		$switch = $this->get_switch();
-		$echostr = &lt;&lt;&lt; END_BLOCK
+//PHPブロック終了
+?>
 &lt;div id="headTitle">
 &lt;h2>都道府県詳細&lt;/h2>
 &lt;/div>
 &lt;!-- コンテンツ　-->
 &lt;div id="contents">
-{$err_flag}
-&lt;form name="form1" action="{$_SERVER['PHP_SELF']}" method="post" >
+&lt;?= $this->get_err_flag(); ?>
+&lt;form name="form1" action="&lt;?= $_SERVER['PHP_SELF']; ?>" method="post" >
 &lt;a href="prefecture_list.php">一覧に戻る&lt;/a>
 &lt;table>
 &lt;tr>
 &lt;th>ID&lt;/th>
-&lt;td width="70%">{$prefecture_id_txt}&lt;/td>
+&lt;td width="70%">&lt;?= $this->get_prefecture_id_txt(); ?>&lt;/td>
 &lt;/tr>
 &lt;tr>
 &lt;th>都道府県名&lt;/th>
-&lt;td width="70%">{$prefecture_name}&lt;/td>
+&lt;td width="70%">&lt;?= $this->get_prefecture_name(); ?>&lt;/td>
 &lt;/tr>
 &lt;/table>
 &lt;input type="hidden" name="func" value="" />
 &lt;input type="hidden" name="param" value="" />
-&lt;input type="hidden" name="prefecture_id" value="{$prefecture_id}" />
-&lt;p class="center">{$switch}&lt;/p>
+&lt;input type="hidden" name="prefecture_id" value="&lt;?= $prefecture_id; ?>" />
+&lt;p class="center">&lt;?= $this->get_switch(); ?>&lt;/p>
 &lt;/form>
 &lt;/div>
 &lt;!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+&lt;?php 
+//PHPブロック再開
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -604,41 +599,39 @@ $page_obj->display();
 	//--------------------------------------------------------------------------------------
 	public function display(){
 		global $prefecture_id;
-		$err_flag = $this->get_err_flag();
-		$prefecture_id_txt = $this->get_prefecture_id_txt();
-		$prefecture_name = $this->get_prefecture_name();
-		$switch = $this->get_switch();
-		$echostr = &lt;&lt;&lt; END_BLOCK
+//PHPブロック終了
+?>
 &lt;div id="headTitle">
 &lt;h2>都道府県詳細&lt;/h2>
 &lt;/div>
 &lt;!-- コンテンツ　-->
 &lt;div id="contents">
-{$err_flag}
-&lt;form name="form1" action="{$_SERVER['PHP_SELF']}" method="post" >
+&lt;?= $this->get_err_flag(); ?>
+&lt;form name="form1" action="&lt;?= $_SERVER['PHP_SELF']; ?>" method="post" >
 &lt;a href="prefecture_list.php">一覧に戻る&lt;/a>
 &lt;table>
 &lt;tr>
 &lt;th>ID&lt;/th>
-&lt;td width="70%">{$prefecture_id_txt}&lt;/td>
+&lt;td width="70%">&lt;?= $this->get_prefecture_id_txt(); ?>&lt;/td>
 &lt;/tr>
 &lt;tr>
 &lt;th>都道府県名&lt;/th>
-&lt;td width="70%">{$prefecture_name}&lt;/td>
+&lt;td width="70%">&lt;?= $this->get_prefecture_name(); ?>&lt;/td>
 &lt;/tr>
 &lt;/table>
 &lt;input type="hidden" name="func" value="" />
 &lt;input type="hidden" name="param" value="" />
-&lt;input type="hidden" name="prefecture_id" value="{$prefecture_id}" />
-&lt;p class="center">{$switch}&lt;/p>
+&lt;input type="hidden" name="prefecture_id" value="&lt;?= $prefecture_id; ?>" />
+&lt;p class="center">&lt;?= $this->get_switch(); ?>&lt;/p>
 &lt;/form>
 &lt;/div>
 &lt;!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+&lt;?php 
+//PHPブロック再開
 	}
 </pre>
 </div>
+　ここでも一覧ページと同じように、いったん、PHPブロックを終了して」、関数の最後に再開しています。<br>
 　ここで特筆すべきは<strong>$prefecture_name = $this->get_prefecture_name();</strong>の記述です。<br>
 　<strong>get_prefecture_name()関数</strong>は以下です。
 <div class="box1">

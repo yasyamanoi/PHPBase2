@@ -184,25 +184,23 @@ END_BLOCK;
 	*/
 	//--------------------------------------------------------------------------------------
 	public function display(){
-		$prefec_rows = $this->get_prefecture_rows();
-		$page_block = $this->get_page_block();
-		$get_tgt_uri = $this->get_tgt_uri();
-		$echostr = <<< END_BLOCK
+//PHPブロック終了
+?>
 <div id="headTitle">
 <h2>都道府県一覧</h2>
 </div>
 <!-- コンテンツ　-->
 <div id="contents">
-<form name="form1" action="{$get_tgt_uri}" method="post" >
+<form name="form1" action="<?= $this->get_tgt_uri(); ?>" method="post" >
 <p><a href="prefecture_detail.php">新規</a></p>
-<p>{$page_block}</p>
+<p><?= $this->get_page_block(); ?></p>
 <table>
 <tr>
 <th>都道府県ID</th>
 <th>都道府県名</th>
 <th>操作</th>
 </tr>
-{$prefec_rows}
+<?= $this->get_prefecture_rows(); ?>
 </table>
 <input type="hidden" name="func" value="" >
 <input type="hidden" name="param" value="" >
@@ -210,8 +208,8 @@ END_BLOCK;
 <p>&nbsp;</p>
 </div>
 <!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+<?php 
+//PHPブロック再開
 	}
 	//--------------------------------------------------------------------------------------
 	/*!

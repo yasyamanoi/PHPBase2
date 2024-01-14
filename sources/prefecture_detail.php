@@ -260,38 +260,35 @@ END_BLOCK;
 	//--------------------------------------------------------------------------------------
 	public function display(){
 		global $prefecture_id;
-		$err_flag = $this->get_err_flag();
-		$prefecture_id_txt = $this->get_prefecture_id_txt();
-		$prefecture_name = $this->get_prefecture_name();
-		$switch = $this->get_switch();
-		$echostr = <<< END_BLOCK
+//PHPブロック終了
+?>
 <div id="headTitle">
 <h2>都道府県詳細</h2>
 </div>
 <!-- コンテンツ　-->
 <div id="contents">
-{$err_flag}
-<form name="form1" action="{$_SERVER['PHP_SELF']}" method="post" >
+<?= $this->get_err_flag(); ?>
+<form name="form1" action="<?= $_SERVER['PHP_SELF']; ?>" method="post" >
 <a href="prefecture_list.php">一覧に戻る</a>
 <table>
 <tr>
 <th>ID</th>
-<td width="70%">{$prefecture_id_txt}</td>
+<td width="70%"><?= $this->get_prefecture_id_txt(); ?></td>
 </tr>
 <tr>
 <th>都道府県名</th>
-<td width="70%">{$prefecture_name}</td>
+<td width="70%"><?= $this->get_prefecture_name(); ?></td>
 </tr>
 </table>
 <input type="hidden" name="func" value="" />
 <input type="hidden" name="param" value="" />
-<input type="hidden" name="prefecture_id" value="{$prefecture_id}" />
-<p class="center">{$switch}</p>
+<input type="hidden" name="prefecture_id" value="<?= $prefecture_id; ?>" />
+<p class="center"><?= $this->get_switch(); ?></p>
 </form>
 </div>
 <!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echostr;
+<?php 
+//PHPブロック再開
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
