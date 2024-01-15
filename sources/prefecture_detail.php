@@ -72,8 +72,11 @@ class cmain_node extends cnode {
 		//プライマリキー
 		global $prefecture_id;
 		if(is_null($page_obj)){
-			return;
+			echo 'ページが無効です';
+			exit();
 		}
+		//POSTデフォルト値のセット
+		$this->post_default();
 		if(isset($_POST['func'])){
 			switch($_POST['func']){
 				case 'set':
@@ -114,15 +117,11 @@ class cmain_node extends cnode {
 				else{
 					//データの取得に失敗したので新規の入力フォーム
 					$_POST['func'] = 'new';
-					//POSTデフォルト値のセット
-					$this->post_default();
 				}
 			}
 			else{
 				//新規の入力フォーム
 				$_POST['func'] = 'new';
-				//POSTデフォルト値のセット
-				$this->post_default();
 			}
 		}
 	}

@@ -78,8 +78,11 @@ class cmain_node extends cnode {
 		//プライマリキー
 		global $member_id;
 		if(is_null($page_obj)){
-			return;
+			echo 'ページが無効です';
+			exit();
 		}
+		//POSTデフォルト値のセット
+		$this->post_default();
 		if(isset($_POST['func'])){
 			switch($_POST['func']){
 				case 'set':
@@ -122,15 +125,11 @@ class cmain_node extends cnode {
 				else{
 					//データの取得に失敗したので新規の入力フォーム
 					$_POST['func'] = 'new';
-					//POSTデフォルト値のセット
-					$this->post_default();
 				}
 			}
 			else{
 				//新規の入力フォーム
 				$_POST['func'] = 'new';
-				//POSTデフォルト値のセット
-				$this->post_default();
 			}
 		}
 	}
@@ -344,6 +343,7 @@ END_BLOCK;
 		$fruits_rows = $fruits_obj->get_all(false);
 		//果物のチェックボックスを作成
 		$tgt = new cchkbox('fruits[]');
+		if(!isset($_POST['fruits']))$_POST['fruits'] = array();
 		foreach($fruits_rows as $key => $val){
 			$check = false;
 			if(array_search($val['fruits_id'],$_POST['fruits']) !== false){
