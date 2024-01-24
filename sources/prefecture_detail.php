@@ -76,7 +76,7 @@ class cmain_node extends cnode {
 			exit();
 		}
 		//POSTデフォルト値のセット
-		$this->post_default();
+		$page_obj->post_default();
 		if(isset($_POST['func'])){
 			switch($_POST['func']){
 				case 'set':
