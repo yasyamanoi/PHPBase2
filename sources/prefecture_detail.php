@@ -75,8 +75,6 @@ class cmain_node extends cnode {
 			echo 'ページが無効です';
 			exit();
 		}
-		//POSTデフォルト値のセット
-		$page_obj->post_default();
 		if(isset($_POST['func'])){
 			switch($_POST['func']){
 				case 'set':
