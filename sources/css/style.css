@@ -1,0 +1,107 @@
+@charset "UTF-8";
+/* CSS ドキュメント */
+
+@media (min-width: 768px) {
+	.bd-placeholder-img-lg {
+		font-size: 3.5rem;
+	}
+}
+
+.b-divider {
+	width: 100%;
+	height: 3rem;
+	background-color: rgba(0, 0, 0, .1);
+	border: solid rgba(0, 0, 0, .15);
+	border-width: 1px 0;
+	box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+}
+
+.text-small {
+	font-size: 85%;
+}
+.contents {
+    flex: 1 0 0%;
+    padding: 2rem 1.5rem;
+}
+/*
+.in_frame {
+    width: 100%;
+}
+.in_frame td {
+    border: 3px solid #fff;
+}
+.in_frame1 {
+    border-top: hidden !important;
+    border-left: hidden !important;
+    width: 110px;
+}
+.in_frame2 {
+    border-top: hidden !important;
+    border-right: hidden !important;
+}
+.in_frame3 {
+    border-left: hidden !important; 
+    border-bottom: hidden !important;
+    width: 110px;
+}
+.in_frame4 {
+    border-bottom: hidden !important;
+    border-right: hidden !important;
+}
+.in_frame5 {
+    border-left: hidden !important; 
+}
+.in_frame6 {
+    border-right: hidden !important;
+}
+*/
+.table-bordered td,
+.table-bordered th {
+	vertical-align: middle !important;
+}
+.table-bordered th {
+    background: #CDDAE5;
+}
+
+.table td,
+.table th,
+.form-control,
+.form-check-input,
+.form-select {
+    border: 1px solid rgba(0,0,0,0.7);
+}
+/*
+.table-active span {
+	float: right;
+}
+.table-striped2 {
+    margin-bottom: 2rem;
+}
+.table-striped2 > tbody > tr:nth-of-type(even) > * {
+    background: rgba(0, 0, 0, 0.05);
+}
+.table-striped2 td {
+    padding: 0;
+    height: 100%;
+}
+.table-striped2 a {
+    display: block;
+    height: 100%;
+    color: #000;
+    font-weight: 700;
+    text-decoration: none;
+    padding: 0.5rem;
+}
+.table-striped2 a:hover {
+    background: #ece1be;
+    color: #fff;
+}
+label {
+	font-size: 14px;
+	margin-right: 0.3rem;
+}
+.form-group {
+	margin-right: 0.3rem;
+}
+
+*/

@@ -157,19 +157,16 @@ class cmain_node extends cnode {
 		if(count($prefecture_rows) > 0){
 			foreach($prefecture_rows as $key => $value){
 				$javamsg =  '【' . $value['prefecture_name'] . '】';
-				$nobottom = '';
-				if($rowscount == count($prefecture_rows)){
-					$nobottom = ' nobottom';
-				}
 				$str =&lt;&lt;&lt;END_BLOCK
+
 &lt;tr>
-&lt;td width="20%" class="center{$nobottom}">
+&lt;td width="20%" class="text-center">
 {$value['prefecture_id']}
 &lt;/td>
-&lt;td width="65%" class="center{$nobottom}">
+&lt;td width="65%" class="text-center">
 &lt;a href="prefecture_detail.php?pid={$value['prefecture_id']}{$urlparam}">{$value['prefecture_name']}&lt;/a>
 &lt;/td>
-&lt;td width="15%" class="center{$nobottom}">
+&lt;td width="15%" class="text-center">
 &lt;input type="button" value="削除確認" onClick="del_func_form({$value['prefecture_id']},'{$javamsg}');" />
 &lt;/td>
 &lt;/tr>
@@ -180,7 +177,8 @@ END_BLOCK;
 		}
 		else{
 			$retstr =&lt;&lt;&lt;END_BLOCK
-&lt;tr>&lt;td colspan="3" class="nobottom">都道府県が見つかりません&lt;/td>&lt;/tr>
+
+&lt;tr>&lt;td colspan="3" class="text-left">都道府県が見つかりません&lt;/td>&lt;/tr>
 END_BLOCK;
 		}
 		return $retstr;
@@ -219,26 +217,23 @@ END_BLOCK;
 	public function display(){
 //PHPブロック終了
 ?>
-&lt;div id="headTitle">
-&lt;h2>都道府県一覧&lt;/h2>
-&lt;/div>
 &lt;!-- コンテンツ　-->
-&lt;div id="contents">
+&lt;div class="contents">
+&lt;h5>&lt;strong>都道府県一覧&lt;/strong>&lt;/h5>
 &lt;form name="form1" action="&lt;?= $this->get_tgt_uri(); ?>" method="post" >
 &lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
 &lt;p>&lt;?= $this->get_page_block(); ?>&lt;/p>
-&lt;table>
+&lt;table class="table table-bordered">
 &lt;tr>
-&lt;th>都道府県ID&lt;/th>
-&lt;th>都道府県名&lt;/th>
-&lt;th>操作&lt;/th>
+&lt;th class="text-center">都道府県ID&lt;/th>
+&lt;th class="text-center">都道府県名&lt;/th>
+&lt;th class="text-center">操作&lt;/th>
 &lt;/tr>
 &lt;?= $this->get_prefecture_rows(); ?>
 &lt;/table>
 &lt;input type="hidden" name="func" value="" >
 &lt;input type="hidden" name="param" value="" >
 &lt;/form>
-&lt;p>&nbsp;&lt;/p>
 &lt;/div>
 &lt;!-- /コンテンツ　-->
 &lt;?php 
@@ -260,13 +255,13 @@ $page_obj = new cnode();
 //ヘッダ追加
 $page_obj->add_child(cutil::create('cheader'));
 //本体追加
-$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+$page_obj->add_child($main_obj = cutil::create('cmain_node'));
 //フッタ追加
 $page_obj->add_child(cutil::create('cfooter'));
 //構築時処理
 $page_obj->create();
 //本体実行（表示前処理）
-$cmain_obj->execute();
+$main_obj->execute();
 //ページ全体を表示
 $page_obj->display();
 
@@ -295,13 +290,13 @@ $page_obj = new cnode();
 //ヘッダ追加
 $page_obj->add_child(cutil::create('cheader'));
 //本体追加
-$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+$page_obj->add_child($main_obj = cutil::create('cmain_node'));
 //フッタ追加
 $page_obj->add_child(cutil::create('cfooter'));
 //構築時処理
 $page_obj->create();
 //本体実行（表示前処理）
-$cmain_obj->execute();
+$main_obj->execute();
 //ページ全体を表示
 $page_obj->display();
 </pre>
@@ -325,7 +320,7 @@ $page_obj->add_child(cutil::create('cheader'));
 </div>
 　でヘッダブロックを追加します。<strong>add_child()関数</strong>は<strong>cnodeクラス</strong>の関数で、<strong>子ノード</strong>を登録します。<br>
 　HTMLは、上方から記述されますので、記述の順番に<strong>add_child()関数</strong>を呼び出します。<br>
-　<strong>add_child()関数</strong>の引数は、ノードまたのインスタンスです。<strong>cutil::create('cheader')</strong>と記述することで、<strong>cheaderクラスのインスタンス</strong>を作成します。<br>
+　<strong>add_child()関数</strong>の引数は、ノードまたはその継承クラスのインスタンスです。<strong>cutil::create('cheader')</strong>と記述することで、<strong>cheaderクラスのインスタンス</strong>を作成します。<br>
 　<strong>cutil::create()関数</strong>は<strong>common/function.php</strong>に、記述があります。
 <div class="box1">
 <pre>
@@ -384,24 +379,29 @@ class cheader extends cnode {
 	//--------------------------------------------------------------------------------------
 	public function display(){
 		$echo_str = &lt;&lt;&lt; END_BLOCK
+
+&lt;!doctype html>
 &lt;html lang="ja">
 &lt;head>
-&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-&lt;link href="css/main.css" rel="stylesheet" type="text/css">
+&lt;meta charset="utf-8">
+&lt;meta name="viewport" content="width=device-width, initial-scale=1">
 &lt;title>PHPBase2サンプル&lt;/title>
+&lt;link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" 
+	integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" 
+	crossorigin="anonymous">
+&lt;link rel="stylesheet" type="text/css" href="css/style.css">
 &lt;/head>
 &lt;body>
 &lt;!-- 全体コンテナ　-->
-&lt;div id="container">
-&lt;div id="pan">
-&lt;table >
-&lt;tr>
-&lt;td>&lt;a href="index.php">メインメニュー&lt;/a>&lt;/td>
-&lt;td>&lt;a href="prefecture_list.php">都道府県管理&lt;/a>&lt;/td>
-&lt;td>&lt;a href="member_list.php">メンバー管理&lt;/a>&lt;/td>
-&lt;/tr>
-&lt;/table>
-&lt;/div>
+&lt;div class="container">
+&lt;header class="d-flex justify-content-center py-3 border-dark border-bottom">
+&lt;ul class="nav nav-pills">
+&lt;li class="nav-item">&lt;a href="index.php" class="nav-link link-success">メインメニュー&lt;/a>&lt;/li>
+&lt;li class="nav-item">&lt;a href="prefecture_list.php" class="nav-link link-success">都道府県管理&lt;/a>&lt;/li>
+&lt;li class="nav-item">&lt;a href="member_list.php" class="nav-link link-success">メンバー管理&lt;/a>&lt;/li>
+&lt;li class="nav-item">&lt;a href="member_list_custom.php" class="nav-link link-success">メンバー管理（カスタムノード）&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;/header>
 END_BLOCK;
 		echo $echo_str;
 	}
@@ -422,7 +422,7 @@ END_BLOCK;
 <div class="box1">
 <pre>
 //本体追加
-$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+$page_obj->add_child($main_obj = cutil::create('cmain_node'));
 </pre>
 </div>
 　があります。ここでは、このPHPに記述がある、いわゆる<strong>本体（cmain_node）</strong>を構築して、<strong>$page_objの子ノード</strong>として登録します。<br>
@@ -440,7 +440,7 @@ $page_obj->create();
 <div class="box1">
 <pre>
 //本体実行（表示前処理）
-$cmain_obj->execute();
+$main_obj->execute();
 </pre>
 </div>
 　で、本体の<strong>execute()関数</strong>を呼び出します。ここでは<strong>$_POSTコマンド</strong>の処理を行います。この一覧ページでは<strong>行削除</strong>処理も行いますので、<strong>削除コマンド</strong>も記述します。<br>
@@ -503,7 +503,7 @@ $page_obj->display();
 </pre>
 </div>
 　ここでは、削除の場合の処理が記述され、その場合は、削除後に再読み込みを行います。<br>
-　<strong>PHPBase2</strong>では<strong>コマンド</strong>の概念があります。これは<strong>$_POST</strong>があった場合の処理として、<strong>$_POST['func']</strong>及び<strong>$_POST['param']</strong>に、どういうコマンドがj発行されたかを記述します。<strong>PHPBase2</strong>は基本的に<strong>自己参照型ページ</strong>として記述しますので、<strong>form</strong>の<strong>action</strong>は自分自身を指し、<strong>name</strong>は<strong>form1</strong>という固定の名前を持ちます。ここを統一することで、効率の良いサイトを構築できます。以下は、<strong>form</strong>の終了タグの直前の記述です。
+　<strong>PHPBase2</strong>では<strong>コマンド</strong>の概念があります。これは<strong>$_POST</strong>があった場合の処理として、<strong>$_POST['func']</strong>及び<strong>$_POST['param']</strong>に、どういうコマンドが発行されたかを記述します。<strong>PHPBase2</strong>は基本的に<strong>自己参照型ページ</strong>として記述しますので、<strong>form</strong>の<strong>action</strong>は自分自身を指し、<strong>name</strong>は<strong>form1</strong>という固定の名前を持ちます。ここを統一することで、効率の良いサイトを構築できます。以下は、<strong>form</strong>の終了タグの直前の記述です。
 <div class="box1">
 <pre>
 &lt;input type="hidden" name="func" value="" >
@@ -541,7 +541,7 @@ $page_obj->display();
 　ここでは<strong>$_POST['param']</strong>が有効だったときのみ操作しています。<br>
 　ここでも、<strong>プリペアドステートメント</strong>を使用します。<strong>プレースホルダ</strong>は<strong>:prefecture_id</strong>を使用し、それは、<strong>削除ボタン</strong>で設定されます。<br>
 　<strong>$where</strong>は<strong>プレースホルダ付きの条件式</strong>、<strong>$wherearr</strong>はデータの配列です。<br>
-　<strong>$change_obj</strong>は<strong>crecord</strong>のインスタンスです。<strong>コンテンツDB</strong>のところで紹介した<strong>SELECT文を記述するクラス</strong>の親クラスに当たりますが、直接構築することもできます。そのメンバ関数<strong>delete_core()関数</strong>には<strong>削除するテーブル、プレースホルダ付きの条件式、データの配列</strong>を渡します。<br>
+　<strong>$change_obj</strong>は<strong>crecord</strong>のインスタンスです。<strong>コンテンツDB</strong>のところで紹介した<strong>SELECT文を記述するクラス</strong>の親クラスに当たりますが、直接構築することもできます。そのメンバ関数<strong>delete_core()関数</strong>には<strong>削除するテーブル、プレースホルダ付きの条件式、条件式のデータの配列</strong>を渡します。<br>
 <h4>４、データの読み込み</h4>
 　都道府県データの読み込みは<strong>execute()関数</strong>から呼ばれる<strong>readdata()関数</strong>です。内容は以下になります。
 <div class="box1">
@@ -583,26 +583,23 @@ $page_obj->display();
 	public function display(){
 //PHPブロック終了
 ?>
-&lt;div id="headTitle">
-&lt;h2>都道府県一覧&lt;/h2>
-&lt;/div>
 &lt;!-- コンテンツ　-->
-&lt;div id="contents">
+&lt;div class="contents">
+&lt;h5>&lt;strong>都道府県一覧&lt;/strong>&lt;/h5>
 &lt;form name="form1" action="&lt;?= $this->get_tgt_uri(); ?>" method="post" >
 &lt;p>&lt;a href="prefecture_detail.php">新規&lt;/a>&lt;/p>
 &lt;p>&lt;?= $this->get_page_block(); ?>&lt;/p>
-&lt;table>
+&lt;table class="table table-bordered">
 &lt;tr>
-&lt;th>都道府県ID&lt;/th>
-&lt;th>都道府県名&lt;/th>
-&lt;th>操作&lt;/th>
+&lt;th class="text-center">都道府県ID&lt;/th>
+&lt;th class="text-center">都道府県名&lt;/th>
+&lt;th class="text-center">操作&lt;/th>
 &lt;/tr>
 &lt;?= $this->get_prefecture_rows(); ?>
 &lt;/table>
 &lt;input type="hidden" name="func" value="" >
 &lt;input type="hidden" name="param" value="" >
 &lt;/form>
-&lt;p>&nbsp;&lt;/p>
 &lt;/div>
 &lt;!-- /コンテンツ　-->
 &lt;?php 
@@ -686,19 +683,16 @@ $page_obj->display();
 		if(count($prefecture_rows) > 0){
 			foreach($prefecture_rows as $key => $value){
 				$javamsg =  '【' . $value['prefecture_name'] . '】';
-				$nobottom = '';
-				if($rowscount == count($prefecture_rows)){
-					$nobottom = ' nobottom';
-				}
 				$str =&lt;&lt;&lt;END_BLOCK
+
 &lt;tr>
-&lt;td width="20%" class="center{$nobottom}">
+&lt;td width="20%" class="text-center">
 {$value['prefecture_id']}
 &lt;/td>
-&lt;td width="65%" class="center{$nobottom}">
+&lt;td width="65%" class="text-center">
 &lt;a href="prefecture_detail.php?pid={$value['prefecture_id']}{$urlparam}">{$value['prefecture_name']}&lt;/a>
 &lt;/td>
-&lt;td width="15%" class="center{$nobottom}">
+&lt;td width="15%" class="text-center">
 &lt;input type="button" value="削除確認" onClick="del_func_form({$value['prefecture_id']},'{$javamsg}');" />
 &lt;/td>
 &lt;/tr>
@@ -709,7 +703,8 @@ END_BLOCK;
 		}
 		else{
 			$retstr =&lt;&lt;&lt;END_BLOCK
-&lt;tr>&lt;td colspan="3" class="nobottom">都道府県が見つかりません&lt;/td>&lt;/tr>
+
+&lt;tr>&lt;td colspan="3" class="text-left">都道府県が見つかりません&lt;/td>&lt;/tr>
 END_BLOCK;
 		}
 		return $retstr;

@@ -1,7 +1,7 @@
 <?php
 /*!
-@file member_detail.php
-@brief メンバー詳細
+@file member_detail_custom.php
+@brief メンバー詳細（カスタムノード）
 @copyright Copyright (c) 2024 Yamanoi Yasushi.
 */
 
@@ -19,6 +19,8 @@ $member_id = 0;
 ///	本体ノード
 //--------------------------------------------------------------------------------------
 class cmain_node extends cnode {
+	public $member_address;
+	public $par_address;
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief	コンストラクタ
@@ -50,13 +52,7 @@ class cmain_node extends cnode {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function post_default(){
-		cutil::post_default("member_name",'');
-		cutil::post_default("member_prefecture_id",0);
-		cutil::post_default("member_address",'');
 		cutil::post_default("member_minor",0);
-		cutil::post_default("par_name",'');
-		cutil::post_default("par_prefecture_id",0);
-		cutil::post_default("par_address",'');
 		if(!isset($_POST['fruits']))$_POST['fruits'] = array();
 		cutil::post_default("member_comment",'');
 	}
@@ -67,6 +63,19 @@ class cmain_node extends cnode {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function create(){
+		$param_arr = array(
+			'cntl_header_name' => 'member',
+			'head' => 'メンバー'
+		);
+		$this->member_address = cutil::create('caddress',$param_arr);
+		$this->add_child($this->member_address);
+		$param_arr = array(
+			'cntl_header_name' => 'par',
+			'head' => '保護者'
+		);
+		$this->par_address = cutil::create('caddress',$param_arr);
+		$this->add_child($this->par_address);
+		parent::create();
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -143,33 +152,7 @@ class cmain_node extends cnode {
 	function paramchk(){
 		global $err_array;
 		global $err_flag;
-		/// メンバー名の存在と空白チェック
-		if(cutil_ex::chkset_err_field($err_array,'member_name','メンバー名','isset_nl')){
-			$err_flag = 1;
-		}
-		/// メンバーの都道府県チェック
-		if(cutil_ex::chkset_err_field($err_array,'member_prefecture_id','メンバー都道府県','isset_num_range',1,47)){
-			$err_flag = 1;
-		}
-		/// メンバー住所の存在と空白チェック
-		if(cutil_ex::chkset_err_field($err_array,'member_address','メンバー市区郡町村以下','isset_nl')){
-			$err_flag = 1;
-		}
-		/// 未成年だった時の保護者住所
-		if($_POST['member_minor'] == 1){
-			/// 保護者名の存在と空白チェック
-			if(cutil_ex::chkset_err_field($err_array,'par_name','保護者名','isset_nl')){
-				$err_flag = 1;
-			}
-			/// 保護者の都道府県チェック
-			if(cutil_ex::chkset_err_field($err_array,'par_prefecture_id','保護者都道府県','isset_num_range',1,47)){
-				$err_flag = 1;
-			}
-			/// 保護者住所の存在と空白チェック
-			if(cutil_ex::chkset_err_field($err_array,'par_address','保護者市区郡町村以下','isset_nl')){
-				$err_flag = 1;
-			}
-		}
+		parent::paramchk();
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -264,67 +247,6 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief	メンバー名コントロールの取得
-	@return	メンバー名コントロール
-	*/
-	//--------------------------------------------------------------------------------------
-	function get_member_name(){
-		global $err_array;
-		$ret_str = '';
-		$tgt = new ctextbox('member_name',$_POST['member_name'],'size="70"');
-		$ret_str = $tgt->get($_POST['func'] == 'conf');
-		if(isset($err_array['member_name'])){
-			$ret_str .=  '<br /><span class="text-danger">' 
-			. cutil::ret2br($err_array['member_name']) 
-			. '</span>';
-		}
-		return $ret_str;
-	}
-
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief	メンバー都道府県プルダウンの取得
-	@return	都道府県プルダウン文字列
-	*/
-	//--------------------------------------------------------------------------------------
-	function get_member_prefecture_select(){
-		global $err_array;
-		//都道府県の一覧を取得
-		$prefecture_obj = new cprefecture();
-		$allcount = $prefecture_obj->get_all_count(false);
-		$prefecture_rows = $prefecture_obj->get_all(false,0,$allcount);
-		$tgt = new cselect('member_prefecture_id');
-		$tgt->add(0,'選択してください',$_POST['member_prefecture_id'] == 0);
-		foreach($prefecture_rows as $key => $val){
-			$tgt->add($val['prefecture_id'],$val['prefecture_name'],$val['prefecture_id'] == $_POST['member_prefecture_id']);
-		}
-		$ret_str = $tgt->get($_POST['func'] == 'conf');
-		if(isset($err_array['member_prefecture_id'])){
-			$ret_str .=  '<br /><span class="text-danger">' 
-			. cutil::ret2br($err_array['member_prefecture_id']) 
-			. '</span>';
-		}
-		return $ret_str;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief	メンバー住所の取得
-	@return	メンバー住所文字列
-	*/
-	//--------------------------------------------------------------------------------------
-	function get_member_address(){
-		global $err_array;
-		$tgt = new ctextbox('member_address',$_POST['member_address'],'size="80"');
-		$ret_str = $tgt->get($_POST['func'] == 'conf');
-		if(isset($err_array['member_address'])){
-			$ret_str .=  '<br /><span class="text-danger">' 
-			. cutil::ret2br($err_array['member_address']) 
-			. '</span>';
-		}
-		return $ret_str;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
 	@brief	メンバー未成年ラジオボタンの取得
 	@return	メンバー未成年ラジオボタン文字列
 	*/
@@ -343,71 +265,6 @@ END_BLOCK;
 		}
 		return $ret_str;
 	}
-
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief	保護者名コントロールの取得
-	@return	保護者名コントロール
-	*/
-	//--------------------------------------------------------------------------------------
-	function get_par_name(){
-		global $err_array;
-		$ret_str = '';
-		$tgt = new ctextbox('par_name',$_POST['par_name'],'size="70"');
-		$ret_str = $tgt->get($_POST['func'] == 'conf');
-		if(isset($err_array['par_name'])){
-			$ret_str .=  '<br /><span class="text-danger">' 
-			. cutil::ret2br($err_array['par_name']) 
-			. '</span>';
-		}
-		return $ret_str;
-	}
-
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief	保護者都道府県プルダウンの取得
-	@return	保護者都道府県プルダウン文字列
-	*/
-	//--------------------------------------------------------------------------------------
-	function get_par_prefecture_select(){
-		global $err_array;
-		//都道府県の一覧を取得
-		$prefecture_obj = new cprefecture();
-		$allcount = $prefecture_obj->get_all_count(false);
-		$prefecture_rows = $prefecture_obj->get_all(false,0,$allcount);
-		$tgt = new cselect('par_prefecture_id');
-		$tgt->add(0,'選択してください',$_POST['par_prefecture_id'] == 0);
-		foreach($prefecture_rows as $key => $val){
-			$tgt->add($val['prefecture_id'],$val['prefecture_name'],$val['prefecture_id'] == $_POST['par_prefecture_id']);
-		}
-		$ret_str = $tgt->get($_POST['func'] == 'conf');
-		if(isset($err_array['par_prefecture_id'])){
-			$ret_str .=  '<br /><span class="text-danger">' 
-			. cutil::ret2br($err_array['par_prefecture_id']) 
-			. '</span>';
-		}
-		return $ret_str;
-	}
-	//--------------------------------------------------------------------------------------
-	/*!
-	@brief	保護者住所の取得
-	@return	保護者住所文字列
-	*/
-	//--------------------------------------------------------------------------------------
-	function get_par_address(){
-		global $err_array;
-		$tgt = new ctextbox('par_address',$_POST['par_address'],'size="80"');
-		$ret_str = $tgt->get($_POST['func'] == 'conf');
-		if(isset($err_array['par_address'])){
-			$ret_str .=  '<br /><span class="text-danger">' 
-			. cutil::ret2br($err_array['par_address']) 
-			. '</span>';
-		}
-		return $ret_str;
-	}
-
-
-
 	//--------------------------------------------------------------------------------------
 	/*!
 	@brief	好きな果物チェックボックスの取得
@@ -486,26 +343,15 @@ END_BLOCK;
 <!-- コンテンツ　-->
 <div class="contents">
 <?= $this->get_err_flag(); ?>
-<h5><strong>メンバー詳細</strong></h5>
+<h5><strong>メンバー詳細（カスタムノード）</strong></h5>
 <form name="form1" action="<?= $_SERVER['PHP_SELF']; ?>" method="post" >
-<a href="member_list.php">一覧に戻る</a>
+<a href="member_list_custom.php">一覧に戻る</a><br>
 <table class="table table-bordered">
 <tr>
 <th class="text-center">ID</th>
 <td width="70%"><?= $this->get_member_id_txt(); ?></td>
 </tr>
-<tr>
-<th class="text-center">メンバー名</th>
-<td width="70%"><?= $this->get_member_name(); ?></td>
-</tr>
-<tr>
-<th class="text-center">メンバー都道府県</th>
-<td width="70%"><?= $this->get_member_prefecture_select(); ?></td>
-</tr>
-<tr>
-<th class="text-center">メンバー市区郡町村以下</th>
-<td width="70%"><?= $this->get_member_address(); ?></td>
-</tr>
+<?php $this->member_address->display(); ?>
 <tr>
 <tr>
 <th class="text-center">好きな果物</th>
@@ -514,18 +360,7 @@ END_BLOCK;
 <th class="text-center">未成年かどうか</th>
 <td width="70%"><?= $this->get_member_minor_radio(); ?></td>
 </tr>
-<tr>
-<th class="text-center">保護者名</th>
-<td width="70%"><?= $this->get_par_name(); ?></td>
-</tr>
-<tr>
-<th class="text-center">保護者都道府県</th>
-<td width="70%"><?= $this->get_par_prefecture_select(); ?></td>
-</tr>
-<tr>
-<th class="text-center">保護者市区郡町村以下</th>
-<td width="70%"><?= $this->get_par_address(); ?></td>
-</tr>
+<?php $this->par_address->display(); ?>
 <tr>
 <th class="text-center">コメント</th>
 <td width="70%"><?= $this->get_member_comment(); ?></td>

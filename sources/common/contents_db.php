@@ -292,7 +292,7 @@ count(*)
 from
 member,prefecture
 where
-member.prefecture_id = prefecture.prefecture_id
+member.member_prefecture_id = prefecture.prefecture_id
 END_BLOCK;
 		//空のデータ
 		$prep_arr = array();
@@ -328,7 +328,7 @@ member.*,prefecture.*
 from
 member,prefecture
 where
-member.prefecture_id = prefecture.prefecture_id
+member.member_prefecture_id = prefecture.prefecture_id
 order by
 member.member_id asc
 limit :from, :limit
@@ -370,7 +370,7 @@ member.*,prefecture.*
 from
 member,prefecture
 where
-member.prefecture_id = prefecture.prefecture_id
+member.member_prefecture_id = prefecture.prefecture_id
 and
 member.member_id = :member_id
 END_BLOCK;

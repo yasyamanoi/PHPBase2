@@ -151,9 +151,12 @@ DROP TABLE IF EXISTS member;
 CREATE TABLE member (
 member_id   INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
 member_name VARCHAR(100)    NOT NULL DEFAULT '',
-prefecture_id   INT NOT NULL DEFAULT 0,
+member_prefecture_id   INT NOT NULL DEFAULT 0,
 member_address TEXT,
-member_gender   INT NOT NULL DEFAULT 0,
+member_minor   INT NOT NULL DEFAULT 0,
+par_name VARCHAR(100)    NOT NULL DEFAULT '',
+par_prefecture_id   INT NOT NULL DEFAULT 0,
+par_address TEXT,
 member_comment TEXT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

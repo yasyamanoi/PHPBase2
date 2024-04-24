@@ -39,21 +39,27 @@ class cmain_node extends cnode {
 
 		$echo_str = <<< END_BLOCK
 
-<div id="headTitle">
-<h2>メインメニュー</h2>
-</div>
+
 <!-- コンテンツ　-->
-<div id="contents">
-<br>
-<table >
+<div class="contents">
+<h5><strong>メインメニュー</strong></h5>
+<table class="table table-bordered">
+<thead>
 <tr>
-<td ><a href="prefecture_list.php">都道府県管理</a></td>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="prefecture_list.php" class="nav-link link-success">都道府県管理</a></td>
 </tr>
 <tr>
-<td><a href="member_list.php">メンバー管理</a></td>
+<td><a href="member_list.php" class="nav-link link-success">メンバー管理</a></td>
 </tr>
+<tr>
+<td><a href="member_list_custom.php" class="nav-link link-success">メンバー管理（カスタムノード）</a></td>
+</tr>
+</tbody>
 </table>
-<p>&nbsp;</p>
 </div>
 <!-- /コンテンツ　-->
 END_BLOCK;

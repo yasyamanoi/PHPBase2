@@ -124,19 +124,16 @@ class cmain_node extends cnode {
 		if(count($prefecture_rows) > 0){
 			foreach($prefecture_rows as $key => $value){
 				$javamsg =  '【' . $value['prefecture_name'] . '】';
-				$nobottom = '';
-				if($rowscount == count($prefecture_rows)){
-					$nobottom = ' nobottom';
-				}
 				$str =<<<END_BLOCK
+
 <tr>
-<td width="20%" class="center{$nobottom}">
+<td width="20%" class="text-center">
 {$value['prefecture_id']}
 </td>
-<td width="65%" class="center{$nobottom}">
+<td width="65%" class="text-center">
 <a href="prefecture_detail.php?pid={$value['prefecture_id']}{$urlparam}">{$value['prefecture_name']}</a>
 </td>
-<td width="15%" class="center{$nobottom}">
+<td width="15%" class="text-center">
 <input type="button" value="削除確認" onClick="del_func_form({$value['prefecture_id']},'{$javamsg}');" />
 </td>
 </tr>
@@ -147,7 +144,8 @@ END_BLOCK;
 		}
 		else{
 			$retstr =<<<END_BLOCK
-<tr><td colspan="3" class="nobottom">都道府県が見つかりません</td></tr>
+
+<tr><td colspan="3" class="text-left">都道府県が見つかりません</td></tr>
 END_BLOCK;
 		}
 		return $retstr;
@@ -186,26 +184,23 @@ END_BLOCK;
 	public function display(){
 //PHPブロック終了
 ?>
-<div id="headTitle">
-<h2>都道府県一覧</h2>
-</div>
 <!-- コンテンツ　-->
-<div id="contents">
+<div class="contents">
+<h5><strong>都道府県一覧</strong></h5>
 <form name="form1" action="<?= $this->get_tgt_uri(); ?>" method="post" >
 <p><a href="prefecture_detail.php">新規</a></p>
 <p><?= $this->get_page_block(); ?></p>
-<table>
+<table class="table table-bordered">
 <tr>
-<th>都道府県ID</th>
-<th>都道府県名</th>
-<th>操作</th>
+<th class="text-center">都道府県ID</th>
+<th class="text-center">都道府県名</th>
+<th class="text-center">操作</th>
 </tr>
 <?= $this->get_prefecture_rows(); ?>
 </table>
 <input type="hidden" name="func" value="" >
 <input type="hidden" name="param" value="" >
 </form>
-<p>&nbsp;</p>
 </div>
 <!-- /コンテンツ　-->
 <?php 
@@ -227,13 +222,13 @@ $page_obj = new cnode();
 //ヘッダ追加
 $page_obj->add_child(cutil::create('cheader'));
 //本体追加
-$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+$page_obj->add_child($main_obj = cutil::create('cmain_node'));
 //フッタ追加
 $page_obj->add_child(cutil::create('cfooter'));
 //構築時処理
 $page_obj->create();
 //本体実行（表示前処理）
-$cmain_obj->execute();
+$main_obj->execute();
 //ページ全体を表示
 $page_obj->display();
 

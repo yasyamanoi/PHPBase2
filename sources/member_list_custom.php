@@ -1,7 +1,7 @@
 <?php
 /*!
-@file member_list.php
-@brief メンバー一覧
+@file member_list_custom.php
+@brief メンバー一覧（カスタムノード）
 @copyright Copyright (c) 2024 Yamanoi Yasushi.
 */
 
@@ -130,7 +130,7 @@ class cmain_node extends cnode {
 {$value['member_id']}
 </td>
 <td width="65%" class="text-center">
-<a href="member_detail.php?mid={$value['member_id']}{$urlparam}">{$value['member_name']}</a>
+<a href="member_detail_custom.php?mid={$value['member_id']}{$urlparam}">{$value['member_name']}</a>
 </td>
 <td width="15%" class="text-center">
 <input type="button" value="削除確認" onClick="del_func_form({$value['member_id']},'{$javamsg}');" />
@@ -184,9 +184,9 @@ END_BLOCK;
 ?>
 <!-- コンテンツ　-->
 <div class="contents">
-<h5><strong>メンバー一覧</strong></h5>
+<h5><strong>メンバー一覧（カスタムノード）</strong></h5>
 <form name="form1" action="<?= $this->get_tgt_uri(); ?>" method="post" >
-<p><a href="member_detail.php">新規</a></p>
+<p><a href="member_detail_custom.php">新規</a></p>
 <p><?= $this->get_page_block(); ?></p>
 <table class="table table-bordered">
 <tr>

@@ -171,14 +171,14 @@ class cmain_node extends cnode {
 			case 1:
 			$str =<<<END_BLOCK
 
-<p class="red">入力エラーがあります。各項目のエラーを確認してください。</p>
+<p class="text-danger">入力エラーがあります。各項目のエラーを確認してください。</p>
 END_BLOCK;
 			return $str;
 			break;
 			case 2:
 			$str =<<<END_BLOCK
 
-<p class="red">更新に失敗しました。サポートを確認下さい。</p>
+<p class="text-danger">更新に失敗しました。サポートを確認下さい。</p>
 END_BLOCK;
 			return $str;
 			break;
@@ -212,7 +212,7 @@ END_BLOCK;
 		$tgt = new ctextbox('prefecture_name',$_POST['prefecture_name'],'size="70"');
 		$ret_str = $tgt->get($_POST['func'] == 'conf');
 		if(isset($err_array['prefecture_name'])){
-			$ret_str .=  '<br /><span class="red">' 
+			$ret_str .=  '<br /><span class="text-danger">' 
 			. cutil::ret2br($err_array['prefecture_name']) 
 			. '</span>';
 		}
@@ -259,28 +259,26 @@ END_BLOCK;
 		global $prefecture_id;
 //PHPブロック終了
 ?>
-<div id="headTitle">
-<h2>都道府県詳細</h2>
-</div>
 <!-- コンテンツ　-->
-<div id="contents">
+<div class="contents">
 <?= $this->get_err_flag(); ?>
+<h5><strong>都道府県詳細</strong></h5>
 <form name="form1" action="<?= $_SERVER['PHP_SELF']; ?>" method="post" >
 <a href="prefecture_list.php">一覧に戻る</a>
-<table>
+<table class="table table-bordered">
 <tr>
-<th>ID</th>
+<th class="text-center">ID</th>
 <td width="70%"><?= $this->get_prefecture_id_txt(); ?></td>
 </tr>
 <tr>
-<th>都道府県名</th>
+<th class="text-center">都道府県名</th>
 <td width="70%"><?= $this->get_prefecture_name(); ?></td>
 </tr>
 </table>
 <input type="hidden" name="func" value="" />
 <input type="hidden" name="param" value="" />
 <input type="hidden" name="prefecture_id" value="<?= $prefecture_id; ?>" />
-<p class="center"><?= $this->get_switch(); ?></p>
+<p class="text-center"><?= $this->get_switch(); ?></p>
 </form>
 </div>
 <!-- /コンテンツ　-->
@@ -303,13 +301,13 @@ $page_obj = new cnode();
 //ヘッダ追加
 $page_obj->add_child(cutil::create('cheader'));
 //本体追加
-$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+$page_obj->add_child($main_obj = cutil::create('cmain_node'));
 //フッタ追加
 $page_obj->add_child(cutil::create('cfooter'));
 //構築時処理
 $page_obj->create();
 //本体実行（表示前処理）
-$cmain_obj->execute();
+$main_obj->execute();
 //ページ全体を表示
 $page_obj->display();
 

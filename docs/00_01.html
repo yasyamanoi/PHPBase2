@@ -56,9 +56,9 @@ END_BLOCK;
 		$prep_arr = array();
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
-			$debug,		//デバッグ表示するかどうか
-			$query,		//プレースホルダつきSQL
-			$prep_arr	//データの配列
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		if($row = $this->fetch_assoc()){
 			//取得した個数を返す
@@ -96,9 +96,9 @@ END_BLOCK;
 				':limit' => (int)$limit);
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
-			$debug,		//デバッグ表示するかどうか
-			$query,		//プレースホルダつきSQL
-			$prep_arr	//データの配列
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		//順次取り出す
 		while($row = $this->fetch_assoc()){
@@ -135,9 +135,9 @@ END_BLOCK;
 		);
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
-			$debug,		//デバッグ表示するかどうか
-			$query,		//プレースホルダつきSQL
-			$prep_arr	//データの配列
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		return $this->fetch_assoc();
 	}
@@ -160,7 +160,7 @@ END_BLOCK;
 　単純なマスタテーブル用のSQL文は、<strong>総レコードの数を得る</strong>、<strong>指定したレコードから何行かを取り出す</strong>、<strong>指定したレコードを取り出す</strong>の３つのアクセス方法があれば足りる場合が多いと思います。<br />
 <br />
 <h4>SELECT文を発行する</h4>
-　<strong>cprefectureクラス</strong>はこららのSQLに対応するメンバ関数が記述されています。<br />
+　<strong>cprefectureクラス</strong>はこれらのSQLに対応するメンバ関数が記述されています。<br />
 　まず、<strong>総レコードの数を得る</strong>は<strong>get_all_count()関数</strong>です。以下に抜き出します。
 <div class="box1">
 <pre>
@@ -185,9 +185,9 @@ END_BLOCK;
 		$prep_arr = array();
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
-			$debug,		//デバッグ表示するかどうか
-			$query,		//プレースホルダつきSQL
-			$prep_arr	//データの配列
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		if($row = $this->fetch_assoc()){
 			//取得した個数を返す
@@ -233,9 +233,9 @@ END_BLOCK;
 				':limit' => (int)$limit);</span>
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
-			$debug,		//デバッグ表示するかどうか
-			$query,		//プレースホルダつきSQL
-			$prep_arr	//データの配列
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		//順次取り出す
 		while($row = $this->fetch_assoc()){
@@ -250,7 +250,7 @@ END_BLOCK;
 　この関数は<strong>$debug</strong>のほかに<strong>$from,$limit</strong>という２つの引数を取ります。<strong>何行目から、何列</strong>という指定が入るわけですが、SQL文（$query変数）には直接入れないで、いったん<strong>:from と :limit</strong>というキーワードでSQL文を作成します。<br>
 　そのうえで、<strong>$prep_arr配列</strong>にそれぞれの値（データ）を設定します。ここでは<strong>:from は $from</strong>に対応し、<strong>:limit は $limit</strong>に対応します。<br>
 　その際（$prep_arr配列を作成する際）、データの<strong>型</strong>を明確にします（int、string等）。ライブラリでは、その型情報にもとに、SQLを実行します。<br>
-　<strong>プレースホルダ</strong>は<strong>: ではじまるキーワード（名前付きプレースフォルダ）</strong>のほかに<strong>?</strong>も使えますが、<strong>PHPBase2</strong>では<strong>?</strong>には未対応です。　また、<strong>$prep_arr配列</strong>の作成時に<strong>':from' => (int)$from</strong>のように記述してますが、PHPのマニュアルでは<strong>'from' => (int)$from</strong>のような記述が説明されています。<br>
+　<strong>プレースホルダ</strong>は<strong>: ではじまるキーワード（名前付きプレースフォルダ）</strong>のほかに<strong>?</strong>も使えますが、<strong>PHPBase2</strong>では<strong>?</strong>には未対応です。また、<strong>$prep_arr配列</strong>の作成時に<strong>':from' => (int)$from</strong>のように記述してますが、PHPのマニュアルでは<strong>'from' => (int)$from</strong>のような記述が説明されています。<br>
 　これは、同マニュアルにて<strong>配列のキーの前にも、コロン ":" を付けることができます(オプション) </strong>と記述があり、まあ、どちらでも良いようですが、個人的には<strong> : をつける</strong>ほうが、プレースホルダが明確になっていいのかな、と思います。<br>
 <br>
 　<strong>cprefectureクラス</strong>にはもう一つ<strong>get_tgt()関数</strong>があり、内容は以下の通りです。
@@ -284,9 +284,9 @@ END_BLOCK;
 		);</span>
 		//親クラスのselect_query()メンバ関数を呼ぶ
 		$this->select_query(
-			$debug,		//デバッグ表示するかどうか
-			$query,		//プレースホルダつきSQL
-			$prep_arr	//データの配列
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
 		);
 		return $this->fetch_assoc();
 	}
