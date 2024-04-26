@@ -13,15 +13,1175 @@
 <!-- コンテンツ　-->
 <div id="contents">
 <h3>１０１．メンバー管理と詳細ページ</h3>
-　ここでは「メンバー管理」の説明を行います。<br>
-　サンプルでは「メンバー管理」をクリックしますと「メンバー一覧」が表示されますが、「都道府県一覧」と同様なので省略します。
-
+　ここでは<strong>メンバー管理</strong>の説明を行います。<br>
+　サンプルでは<strong>メンバー管理</strong>をクリックしますと<strong>メンバー一覧</strong>が表示されますが、<strong>都道府県一覧</strong>と、ほぼ同様なので省略します。
 <h4>詳細ページの機能</h4>
-
+　メンバー一覧ページは初期状態はデータが入っていません。<strong>新規</strong>をクリックすると以下のようなページが出ます。<br>
+<p>&nbsp;</p>
+<img src="img/0101a.png" width="100%" border="1"/>
+<p>図0101a</p>
+<p>&nbsp;</p>
+　ここで、各入力項目を入力して<strong>確認</strong>ボタンをクリックします。<br>
+　<strong>確認画面</strong>では、<strong>新規</strong>または<strong>更新</strong>ボタンで、データを保存します。<br>
+　<strong>メンバー名、メンバー都道府県、メンバー市区郡町村以下</strong>は必須項目ですが、<strong>未成年</strong>を選択した場合、<strong>保護者名、保護者都道府県、保護者市区郡町村以下</strong>も必須項目になります。<br>
+<h4>メンバー詳細のためのコンテンツDBクラス</h4>
+　まず、以下に<strong>common/contents_db.php</strong>の、メンバー用のコンテンツDBクラスを紹介します。
 <div class="box1">
 <pre>
+//--------------------------------------------------------------------------------------
+///	フルーツクラス
+//--------------------------------------------------------------------------------------
+class cfruits extends crecord {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	すべての個数を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@return	個数
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_count($debug){
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+count(*)
+from
+fruits
+where
+1
+END_BLOCK;
+		//空のデータ
+		$prep_arr = array();
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		if($row = $this->fetch_assoc()){
+			//取得した個数を返す
+			return $row['count(*)'];
+		}
+		else{
+			return 0;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	すべての配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all($debug){
+		$arr = array();
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+fruits
+where
+1
+order by
+fruits_id asc
+END_BLOCK;
+		//空のデータ
+		$prep_arr = array();
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		//順次取り出す
+		while($row = $this->fetch_assoc()){
+			$arr[] = $row;
+		}
+		//取得した配列を返す
+		return $arr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定されたIDの配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@return	配列（1次元配列になる）空の場合はfalse
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_tgt($debug,$id){
+		if(!cutil::is_number($id)
+		||  $id &lt; 1){
+			//falseを返す
+			return false;
+		}
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+fruits
+where
+fruits_id = :fruits_id
+END_BLOCK;
+		$prep_arr = array(
+				':fruits_id' => (int)$id
+		);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		return $this->fetch_assoc();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
+
+//--------------------------------------------------------------------------------------
+///	メンバークラス
+//--------------------------------------------------------------------------------------
+class cmember extends crecord {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	すべての個数を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@return	個数
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_count($debug){
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+count(*)
+from
+member,prefecture
+where
+member.member_prefecture_id = prefecture.prefecture_id
+END_BLOCK;
+		//空のデータ
+		$prep_arr = array();
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		if($row = $this->fetch_assoc()){
+			//取得した個数を返す
+			return $row['count(*)'];
+		}
+		else{
+			return 0;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定された範囲の配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$from	抽出開始行
+	@param[in]	$limit	抽出数
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all($debug,$from,$limit){
+		$arr = array();
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+member.*,prefecture.*
+from
+member,prefecture
+where
+member.member_prefecture_id = prefecture.prefecture_id
+order by
+member.member_id asc
+limit :from, :limit
+END_BLOCK;
+		$prep_arr = array(
+				':from' => (int)$from,
+				':limit' => (int)$limit);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		//順次取り出す
+		while($row = $this->fetch_assoc()){
+			$arr[] = $row;
+		}
+		//取得した配列を返す
+		return $arr;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	指定されたIDの配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@return	配列（1次元配列になる）空の場合はfalse
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_tgt($debug,$id){
+		if(!cutil::is_number($id)
+		||  $id &lt; 1){
+			//falseを返す
+			return false;
+		}
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+member.*,prefecture.*
+from
+member,prefecture
+where
+member.member_prefecture_id = prefecture.prefecture_id
+and
+member.member_id = :member_id
+END_BLOCK;
+		$prep_arr = array(
+				':member_id' => (int)$id
+		);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		return $this->fetch_assoc();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	フルーツとのマッチする配列を得る
+	@param[in]	$debug	デバッグ出力をするかどうか
+	@param[in]	$id		ID
+	@return	配列（2次元配列になる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function get_all_fruits_match($debug,$id){
+		if(!cutil::is_number($id)
+		||  $id &lt; 1){
+			//falseを返す
+			return false;
+		}
+		//プレースホルダつき
+		$query = &lt;&lt;&lt; END_BLOCK
+select
+*
+from
+fruits_match
+where
+member_id = :member_id
+order by
+fruits_id asc
+END_BLOCK;
+		$prep_arr = array(
+				':member_id' => (int)$id
+		);
+		//親クラスのselect_query()メンバ関数を呼ぶ
+		$this->select_query(
+			$debug,			//デバッグ表示するかどうか
+			$query,			//プレースホルダつきSQL
+			$prep_arr		//データの配列
+		);
+		//順次取り出す
+		while($row = $this->fetch_assoc()){
+			$arr[] = $row['fruits_id'];
+		}
+		//取得した配列を返す
+		return $arr;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
 </pre>
 </div>
+　このように、<strong>好きな果物</strong>用の<strong>フルーツクラス（cfruits）</strong>と、メンバー用の<strong>cmember</strong>があります。<br>
+　それぞれ<strong>get_all_count</strong>関数、<strong>get_all</strong>関数、<strong>get_tgt</strong>関数があり、cmemberには、複数選択チェックボックス用の、<strong>get_all_fruits_match</strong>関数があります。<br>
+　それぞれ<strong>プレースフォルダ</strong>に対応しているのがわかります。
+
+<h4>詳細ページのソース</h4>
+　詳細ページの構造は基本的に<strong>都道府県詳細</strong>と同じです。<strong>入力項目数</strong>および<strong>いろんな入力方法</strong>があるだけです。<br>
+　以下に<strong>メンバー詳細ページ（member_detail.php）</strong>のソースを紹介します。
+<div class="box1">
+<pre>
+&lt;?php
+/*!
+@file member_detail.php
+@brief メンバー詳細
+@copyright Copyright (c) 2024 Yamanoi Yasushi.
+*/
+
+//ライブラリをインクルード
+require_once("common/libs.php");
+
+$err_array = array();
+$err_flag = 0;
+$page_obj = null;
+//プライマリキー
+$member_id = 0;
+
+
+//--------------------------------------------------------------------------------------
+///	本体ノード
+//--------------------------------------------------------------------------------------
+class cmain_node extends cnode {
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+		//プライマリキー
+		global $member_id;
+		if(isset($_GET['mid']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_GET['mid'])
+			&& $_GET['mid'] > 0){
+			$member_id = $_GET['mid'];
+		}
+		//$_POST優先
+		if(isset($_POST['member_id']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_POST['member_id'])
+			&& $_POST['member_id'] > 0){
+			$member_id = $_POST['member_id'];
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  POST変数のデフォルト値をセット
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function post_default(){
+		cutil::post_default("member_name",'');
+		cutil::post_default("member_prefecture_id",0);
+		cutil::post_default("member_address",'');
+		cutil::post_default("member_minor",0);
+		cutil::post_default("par_name",'');
+		cutil::post_default("par_prefecture_id",0);
+		cutil::post_default("par_address",'');
+		if(!isset($_POST['fruits']))$_POST['fruits'] = array();
+		cutil::post_default("member_comment",'');
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  本体実行（表示前処理）
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function execute(){
+		global $err_array;
+		global $err_flag;
+		global $page_obj;
+		//プライマリキー
+		global $member_id;
+		if(is_null($page_obj)){
+			echo 'ページが無効です';
+			exit();
+		}
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+				case 'set':
+					//パラメータのチェック
+					$page_obj->paramchk();
+					if($err_flag != 0){
+						$_POST['func'] = 'edit';
+					}
+					else{
+						$this->regist();
+					}
+				case 'conf':
+					//パラメータのチェック
+					$page_obj->paramchk();
+					if($err_flag != 0){
+						$_POST['func'] = 'edit';
+					}
+				break;
+				case 'edit':
+					//戻るボタン。
+				break;
+				default:
+					//通常はありえない
+					echo '原因不明のエラーです。';
+					exit;
+				break;
+			}
+		}
+		else{
+			if($member_id > 0){
+				$member_obj = new cmember();
+				//$_POSTにデータを読み込む
+				$_POST = $member_obj->get_tgt(false,$member_id);
+				if(cutil::array_chk($_POST)){
+					//好きな果物を読み込む
+					$_POST['fruits'] = $member_obj->get_all_fruits_match(false,$member_id);
+					//データ取得成功
+					$_POST['func'] = 'edit';
+				}
+				else{
+					//データの取得に失敗したので新規の入力フォーム
+					$_POST['func'] = 'new';
+				}
+			}
+			else{
+				//新規の入力フォーム
+				$_POST['func'] = 'new';
+			}
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	パラメータのチェック
+	@return	エラーの場合はfalseを返す
+	*/
+	//--------------------------------------------------------------------------------------
+	function paramchk(){
+		global $err_array;
+		global $err_flag;
+		/// メンバー名の存在と空白チェック
+		if(cutil_ex::chkset_err_field($err_array,'member_name','メンバー名','isset_nl')){
+			$err_flag = 1;
+		}
+		/// メンバーの都道府県チェック
+		if(cutil_ex::chkset_err_field($err_array,'member_prefecture_id','メンバー都道府県','isset_num_range',1,47)){
+			$err_flag = 1;
+		}
+		/// メンバー住所の存在と空白チェック
+		if(cutil_ex::chkset_err_field($err_array,'member_address','メンバー市区郡町村以下','isset_nl')){
+			$err_flag = 1;
+		}
+		/// 未成年だった時の保護者住所
+		if($_POST['member_minor'] == 1){
+			/// 保護者名の存在と空白チェック
+			if(cutil_ex::chkset_err_field($err_array,'par_name','保護者名','isset_nl')){
+				$err_flag = 1;
+			}
+			/// 保護者の都道府県チェック
+			if(cutil_ex::chkset_err_field($err_array,'par_prefecture_id','保護者都道府県','isset_num_range',1,47)){
+				$err_flag = 1;
+			}
+			/// 保護者住所の存在と空白チェック
+			if(cutil_ex::chkset_err_field($err_array,'par_address','保護者市区郡町村以下','isset_nl')){
+				$err_flag = 1;
+			}
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	フルーツデータの追加／更新
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function regist_fruits($member_id){
+		$where = 'member_id = :member_id';
+		$wherearr[':member_id'] = (int)$member_id;
+		$change_obj = new crecord();
+		$change_obj->delete_core(false,'fruits_match',$where,$wherearr,false);
+		foreach($_POST['fruits'] as $key => $val){
+			$dataarr = array();
+			$dataarr['member_id'] = (int)$member_id;
+			$dataarr['fruits_id'] = (int)$val;
+			$change_obj->insert_core(false,'fruits_match',$dataarr,false);
+		}
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバーの追加／更新。保存後自分自身を再読み込みする。
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function regist(){
+		global $member_id;
+		$change_obj = new crecord();
+		$dataarr = array();
+		$dataarr['member_name'] = (string)$_POST['member_name'];
+		$dataarr['member_prefecture_id'] = (int)$_POST['member_prefecture_id'];
+		$dataarr['member_address'] = (string)$_POST['member_address'];
+		$dataarr['member_minor'] = (int)$_POST['member_minor'];
+		$dataarr['par_name'] = (string)$_POST['par_name'];
+		$dataarr['par_prefecture_id'] = (int)$_POST['par_prefecture_id'];
+		$dataarr['par_address'] = (string)$_POST['par_address'];
+		$dataarr['member_comment'] = (string)$_POST['member_comment'];
+		if($member_id > 0){
+			$where = 'member_id = :member_id';
+			$wherearr[':member_id'] = (int)$member_id;
+			$change_obj->update_core(false,'member',$dataarr,$where,$wherearr,false);
+			$this->regist_fruits($member_id);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?mid=' . $member_id);
+		}
+		else{
+			$mid = $change_obj->insert_core(false,'member',$dataarr,false);
+			$this->regist_fruits($mid);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?mid=' . $mid);
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	エラー存在文字列の取得
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_err_flag(){
+		global $err_flag;
+		switch($err_flag){
+			case 1:
+			$str =&lt;&lt;&lt;END_BLOCK
+
+&lt;p class="text-danger">入力エラーがあります。各項目のエラーを確認してください。&lt;/p>
+END_BLOCK;
+			return $str;
+			break;
+			case 2:
+			$str =&lt;&lt;&lt;END_BLOCK
+
+&lt;p class="text-danger">更新に失敗しました。サポートを確認下さい。&lt;/p>
+END_BLOCK;
+			return $str;
+			break;
+		}
+		return '';
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバーIDの取得(新規の場合は<strong>新規</strong>)
+	@return	メンバーID
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_member_id_txt(){
+		global $member_id;
+		if($member_id &lt;= 0){
+			return '新規';
+		}
+		else{
+			return $member_id;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバー名コントロールの取得
+	@return	メンバー名コントロール
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_member_name(){
+		global $err_array;
+		$ret_str = '';
+		$tgt = new ctextbox('member_name',$_POST['member_name'],'size="70"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['member_name'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['member_name']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバー都道府県プルダウンの取得
+	@return	都道府県プルダウン文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_member_prefecture_select(){
+		global $err_array;
+		//都道府県の一覧を取得
+		$prefecture_obj = new cprefecture();
+		$allcount = $prefecture_obj->get_all_count(false);
+		$prefecture_rows = $prefecture_obj->get_all(false,0,$allcount);
+		$tgt = new cselect('member_prefecture_id');
+		$tgt->add(0,'選択してください',$_POST['member_prefecture_id'] == 0);
+		foreach($prefecture_rows as $key => $val){
+			$tgt->add($val['prefecture_id'],$val['prefecture_name'],$val['prefecture_id'] == $_POST['member_prefecture_id']);
+		}
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['member_prefecture_id'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['member_prefecture_id']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバー住所の取得
+	@return	メンバー住所文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_member_address(){
+		global $err_array;
+		$tgt = new ctextbox('member_address',$_POST['member_address'],'size="80"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['member_address'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['member_address']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバー未成年ラジオボタンの取得
+	@return	メンバー未成年ラジオボタン文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_member_minor_radio(){
+		global $err_array;
+		//メンバー性別のラジオボタンを作成
+		$tgt = new cradio('member_minor');
+		$tgt->add(0,'成人',$_POST['member_minor'] == 0);
+		$tgt->add(1,'未成年',$_POST['member_minor'] == 1);
+		$ret_str = $tgt->get($_POST['func'] == 'conf','&nbsp;');
+		if(isset($err_array['member_minor'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['member_minor']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	保護者名コントロールの取得
+	@return	保護者名コントロール
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_par_name(){
+		global $err_array;
+		$ret_str = '';
+		$tgt = new ctextbox('par_name',$_POST['par_name'],'size="70"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['par_name'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['par_name']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	保護者都道府県プルダウンの取得
+	@return	保護者都道府県プルダウン文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_par_prefecture_select(){
+		global $err_array;
+		//都道府県の一覧を取得
+		$prefecture_obj = new cprefecture();
+		$allcount = $prefecture_obj->get_all_count(false);
+		$prefecture_rows = $prefecture_obj->get_all(false,0,$allcount);
+		$tgt = new cselect('par_prefecture_id');
+		$tgt->add(0,'選択してください',$_POST['par_prefecture_id'] == 0);
+		foreach($prefecture_rows as $key => $val){
+			$tgt->add($val['prefecture_id'],$val['prefecture_name'],$val['prefecture_id'] == $_POST['par_prefecture_id']);
+		}
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['par_prefecture_id'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['par_prefecture_id']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	保護者住所の取得
+	@return	保護者住所文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_par_address(){
+		global $err_array;
+		$tgt = new ctextbox('par_address',$_POST['par_address'],'size="80"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array['par_address'])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array['par_address']) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	好きな果物チェックボックスの取得
+	@return	好きな果物チェックボックス文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_fruits_match_check(){
+		global $err_array;
+		global $member_id;
+		//フルーツの一覧を取得
+		$fruits_obj = new cfruits();
+		$fruits_rows = $fruits_obj->get_all(false);
+		//果物のチェックボックスを作成
+		$tgt = new cchkbox('fruits[]');
+		if(!isset($_POST['fruits']))$_POST['fruits'] = array();
+		foreach($fruits_rows as $key => $val){
+			$check = false;
+			if(array_search($val['fruits_id'],$_POST['fruits']) !== false){
+				$check = true;
+			}
+			$tgt->add($val['fruits_id'],$val['fruits_name'],$check);
+		}
+		$ret_str = $tgt->get($_POST['func'] == 'conf','&nbsp;');
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバーコメントの取得
+	@return	メンバーコメント文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_member_comment(){
+		global $err_array;
+		$tgt = new ctextarea('member_comment',$_POST['member_comment'],'cols="70" rows="5"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	操作ボタンの取得
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_switch(){
+		global $member_id;
+		$ret_str = '';
+		if($_POST['func'] == 'conf'){
+			$button = '更新';
+			if($member_id &lt;= 0){
+				$button = '追加';
+			}
+			$ret_str =&lt;&lt;&lt;END_BLOCK
+
+&lt;input type="button"  value="戻る" onClick="set_func_form('edit','')"/>&nbsp;
+&lt;input type="button"  value="{$button}" onClick="set_func_form('set','')"/>
+END_BLOCK;
+		}
+		else{
+			$ret_str =&lt;&lt;&lt;END_BLOCK
+
+&lt;input type="button"  value="確認" onClick="set_func_form('conf','')"/>
+END_BLOCK;
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		global $member_id;
+//PHPブロック終了
+?>
+&lt;!-- コンテンツ　-->
+&lt;div class="contents">
+&lt;?= $this->get_err_flag(); ?>
+&lt;h5>&lt;strong>メンバー詳細&lt;/strong>&lt;/h5>
+&lt;form name="form1" action="&lt;?= $_SERVER['PHP_SELF']; ?>" method="post" >
+&lt;a href="member_list.php">一覧に戻る&lt;/a>
+&lt;table class="table table-bordered">
+&lt;tr>
+&lt;th class="text-center">ID&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_id_txt(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">メンバー名&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_name(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">メンバー都道府県&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_prefecture_select(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">メンバー市区郡町村以下&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_address(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;tr>
+&lt;th class="text-center">好きな果物&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_fruits_match_check(); ?>&lt;/td>
+&lt;/tr>
+&lt;th class="text-center">未成年かどうか&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_minor_radio(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">保護者名&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_par_name(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">保護者都道府県&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_par_prefecture_select(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">保護者市区郡町村以下&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_par_address(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">コメント&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_comment(); ?>&lt;/td>
+&lt;/tr>
+&lt;/table>
+&lt;input type="hidden" name="func" value="" />
+&lt;input type="hidden" name="param" value="" />
+&lt;input type="hidden" name="member_id" value="&lt;?= $member_id; ?>" />
+&lt;p class="text-center">&lt;?= $this->get_switch(); ?>&lt;/p>
+&lt;/form>
+&lt;/div>
+&lt;!-- /コンテンツ　-->
+&lt;?php 
+//PHPブロック再開
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
+
+//ページを作成
+$page_obj = new cnode();
+//ヘッダ追加
+$page_obj->add_child(cutil::create('cheader'));
+//本体追加
+$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+//フッタ追加
+$page_obj->add_child(cutil::create('cfooter'));
+//構築時処理
+$page_obj->create();
+//本体実行（表示前処理）
+$cmain_obj->execute();
+//ページ全体を表示
+$page_obj->display();
+
+?>
+</pre>
+</div>
+<h4>詳細ページの流れ</h4>
+　まず、ソースの下部、
+<div class="box1">
+<pre>
+//ページを作成
+$page_obj = new cnode();
+//ヘッダ追加
+$page_obj->add_child(cutil::create('cheader'));
+//本体追加
+$page_obj->add_child($cmain_obj = cutil::create('cmain_node'));
+//フッタ追加
+$page_obj->add_child(cutil::create('cfooter'));
+//構築時処理
+$page_obj->create();
+</pre>
+</div>
+　のように、<strong>ページオブジェクト</strong>を作成し、<strong>ヘッダ、本体、フッタ</strong>を追加します。<br>
+　その後、本体を実行し、ページオブジェクトを表示します
+<div class="box1">
+<pre>
+//本体実行（表示前処理）
+$cmain_obj->execute();
+//ページ全体を表示
+$page_obj->display();
+</pre>
+</div>
+<h4>コンストラクタとexecute関数</h4>
+　以下は、本体のコンストラクタです。
+<div class="box1">
+<pre>
+	public function __construct() {
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+		//プライマリキー
+		global $member_id;
+		if(isset($_GET['mid']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_GET['mid'])
+			&& $_GET['mid'] > 0){
+			$member_id = $_GET['mid'];
+		}
+		//$_POST優先
+		if(isset($_POST['member_id']) 
+		//cutilクラスのメンバ関数をスタティック呼出
+			&& cutil::is_number($_POST['member_id'])
+			&& $_POST['member_id'] > 0){
+			$member_id = $_POST['member_id'];
+		}
+	}
+</pre>
+</div>
+　ここでは、プライマリキーである<strong>$member_id</strong>をGETもしくはPOSTから取り出します。新規の場合は、プライマリキーは<strong>0</strong>です。<br>
+　また
+<div class="box1">
+<pre>
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+</pre>
+</div>
+　で<strong>cnodeクラス</strong>のコンストラクタが呼ばれるわけですが、その中で<strong>post_default()</strong>関数が呼ばれます。<br>
+　この関数は$_POST配列変数に各フィールドのメンバがなかった時に、デフォルト値を設定します。<br>
+　以下のように、多重定義して記述します。
+<div class="box1">
+<pre>
+	public function post_default(){
+		cutil::post_default("member_name",'');
+		cutil::post_default("member_prefecture_id",0);
+		cutil::post_default("member_address",'');
+		cutil::post_default("member_minor",0);
+		cutil::post_default("par_name",'');
+		cutil::post_default("par_prefecture_id",0);
+		cutil::post_default("par_address",'');
+		if(!isset($_POST['fruits']))$_POST['fruits'] = array();
+		cutil::post_default("member_comment",'');
+	}
+</pre>
+</div>
+　一通り初期化が終わると<strong>execute()</strong>関数が呼ばれます。<br>
+　ここでは、
+<div class="box1">
+<pre>
+		if(isset($_POST['func'])){
+			switch($_POST['func']){
+</pre>
+</div>
+　のように<strong>コマンドがPOSTされているかどうか</strong>をチェックして、コマンドがある場合とない場合に振り分けます。<br>
+　なかった場合は、プライマリキー（$member_id）をチェックして、0より大きければ、データを読み込みます。<br>
+　0であれば<strong>新規</strong>なので、何も読み込まずに表示します。<br>
+　コマンドがあった場合は、<strong>conf（確認画面）</strong>もしくは<strong>set（追加更新）</strong>もしくは<strong>edit（入力画面）</strong>に振り分けます。<br>
+　<strong>conf（確認画面）</strong>もしくは<strong>set（追加更新）</strong>の場合は、<strong>paramchk()</strong>関数（パラメータのチェック）を経て、エラー表示かどうかを決定します。<br>
+　<strong>set（追加更新）</strong>の場合でエラーがなければ、<strong>regist()</strong>関数を呼び出し、自分自身を再読み込みします。<br>
+　再読み込みする理由は、<strong>2重POST</strong>を避けるためです。<br>
+<h4>regist関数</h4>
+　保存用の<strong>regist</strong>関数、および<strong>regist_fruits</strong>関数は以下の通りです。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	フルーツデータの追加／更新
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function regist_fruits($member_id){
+		$where = 'member_id = :member_id';
+		$wherearr[':member_id'] = (int)$member_id;
+		$change_obj = new crecord();
+		$change_obj->delete_core(false,'fruits_match',$where,$wherearr,false);
+		foreach($_POST['fruits'] as $key => $val){
+			$dataarr = array();
+			$dataarr['member_id'] = (int)$member_id;
+			$dataarr['fruits_id'] = (int)$val;
+			$change_obj->insert_core(false,'fruits_match',$dataarr,false);
+		}
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	メンバーの追加／更新。保存後自分自身を再読み込みする。
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	function regist(){
+		global $member_id;
+		$change_obj = new crecord();
+		$dataarr = array();
+		$dataarr['member_name'] = (string)$_POST['member_name'];
+		$dataarr['member_prefecture_id'] = (int)$_POST['member_prefecture_id'];
+		$dataarr['member_address'] = (string)$_POST['member_address'];
+		$dataarr['member_minor'] = (int)$_POST['member_minor'];
+		$dataarr['par_name'] = (string)$_POST['par_name'];
+		$dataarr['par_prefecture_id'] = (int)$_POST['par_prefecture_id'];
+		$dataarr['par_address'] = (string)$_POST['par_address'];
+		$dataarr['member_comment'] = (string)$_POST['member_comment'];
+		if($member_id > 0){
+			$where = 'member_id = :member_id';
+			$wherearr[':member_id'] = (int)$member_id;
+			$change_obj->update_core(false,'member',$dataarr,$where,$wherearr,false);
+			$this->regist_fruits($member_id);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?mid=' . $member_id);
+		}
+		else{
+			$mid = $change_obj->insert_core(false,'member',$dataarr,false);
+			$this->regist_fruits($mid);
+			cutil::redirect_exit($_SERVER['PHP_SELF'] . '?mid=' . $mid);
+		}
+	}
+</pre>
+</div>
+　<strong>regist</strong>関数は、設定する項目数が多いだけで、基本的に<strong>都道府県詳細</strong>と同じです。<br>
+　設定する項目の配列<strong>$dataarr</strong>に、追加更新するデータを設定し、追加の場合は
+<div class="box1">
+<pre>
+			$mid = $change_obj->insert_core(false,'member',$dataarr,false);
+</pre>
+</div>
+　のように<strong>insert_core</strong>関数を呼び出し、更新の時は
+<div class="box1">
+<pre>
+			$where = 'member_id = :member_id';
+			$wherearr[':member_id'] = (int)$member_id;
+</pre>
+</div>
+　のようにプレースホルダ用の変数を用意し
+<div class="box1">
+<pre>
+			$change_obj->update_core(false,'member',$dataarr,$where,$wherearr,false);
+</pre>
+</div>
+　と呼び出します。<br>
+　その後、<strong>好きな果物</strong>用の<strong>regist_fruits</strong>関数を呼びます。
+<div class="box1">
+<pre>
+	function regist_fruits($member_id){
+		$where = 'member_id = :member_id';
+		$wherearr[':member_id'] = (int)$member_id;
+		$change_obj = new crecord();
+		$change_obj->delete_core(false,'fruits_match',$where,$wherearr,false);
+		foreach($_POST['fruits'] as $key => $val){
+			$dataarr = array();
+			$dataarr['member_id'] = (int)$member_id;
+			$dataarr['fruits_id'] = (int)$val;
+			$change_obj->insert_core(false,'fruits_match',$dataarr,false);
+		}
+	}
+</pre>
+</div>
+　この関数では、そのメンバーに対応する<strong>fruits_match</strong>テーブルのデータをいったん削除し、チェックされた複数の果物を、あらためて<strong>追加</strong>します。<br>
+　こうすることで、ダブりチェックとか、ちょっと大変そうな処理、を避けることができます。
+<h4>display関数</h4>
+　表示用の関数<strong>display</strong>は以下です。
+<div class="box1">
+<pre>
+	public function display(){
+		global $member_id;
+//PHPブロック終了
+?>
+&lt;!-- コンテンツ　-->
+&lt;div class="contents">
+&lt;?= $this->get_err_flag(); ?>
+&lt;h5>&lt;strong>メンバー詳細&lt;/strong>&lt;/h5>
+&lt;form name="form1" action="&lt;?= $_SERVER['PHP_SELF']; ?>" method="post" >
+&lt;a href="member_list.php">一覧に戻る&lt;/a>
+&lt;table class="table table-bordered">
+&lt;tr>
+&lt;th class="text-center">ID&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_id_txt(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">メンバー名&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_name(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">メンバー都道府県&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_prefecture_select(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">メンバー市区郡町村以下&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_address(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;tr>
+&lt;th class="text-center">好きな果物&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_fruits_match_check(); ?>&lt;/td>
+&lt;/tr>
+&lt;th class="text-center">未成年かどうか&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_minor_radio(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">保護者名&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_par_name(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">保護者都道府県&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_par_prefecture_select(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">保護者市区郡町村以下&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_par_address(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">コメント&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_member_comment(); ?>&lt;/td>
+&lt;/tr>
+&lt;/table>
+&lt;input type="hidden" name="func" value="" />
+&lt;input type="hidden" name="param" value="" />
+&lt;input type="hidden" name="member_id" value="&lt;?= $member_id; ?>" />
+&lt;p class="text-center">&lt;?= $this->get_switch(); ?>&lt;/p>
+&lt;/form>
+&lt;/div>
+&lt;!-- /コンテンツ　-->
+&lt;?php 
+//PHPブロック再開
+	}
+</pre>
+</div>
+　ここでは最初に
+<div class="box1">
+<pre>
+//PHPブロック終了
+?>
+</pre>
+</div>
+　PHPブロックを終了させます。これは<strong>PHPの外側はそのまま表示する</strong>というPHPの文法によります。<br>
+　こうすることで以下の部分は<strong>出力すべき文字列</strong>として扱われます。<br>
+　文字列ブロックでは、基本的にテーブルの中に<strong>入力コントロール</strong>を表示してますが、各コントロール文字列を得る関数を呼び出します。
+<div class="box1">
+<pre>
+&lt;?= $this->get_member_name(); ?>
+</pre>
+</div>
+　などがそうです。それらの関数では<strong>ctextboxクラス</strong>などを利用しています。これらのクラスはコントロールクラスといい<strong>common/controls.php</strong>および<strong>common/controls_ex.php</strong>に定義されています。<br>
+　それらの特徴は<strong>get関数に渡すパラメータ</strong>によって<strong>入力状態、確認状態</strong>に振り分けられることです。これにより、例えば<strong>確認画面用の詳細ページ</strong>のようなPHPファイルを作成する必要がありません。<br>
+　ただ欠点とすれば、アトリビュートは動的にわかせますが、デザイン上、ほかのタグが必要などの場合は、これらのクラスは使えません。<br>
+　その場合は、<strong>ctextboxクラス</strong>などを参考に<strong>cmy_textboxクラス</strong>などを作ってそれを呼び出すとよいでしょう。
 
 </div>
 <!-- /コンテンツ　-->
@@ -30,6 +1190,7 @@
 <ul class="foot_navi">
 <li><a href="00_03.html">前へ</a></li>
 <li><a href="index.html">目次</a></li>
+<li><a href="01_02.html">次へ</a></li>
 </ul>
 <!-- /フッタ　-->
 
