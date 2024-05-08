@@ -13,14 +13,14 @@
 <!-- コンテンツ　-->
 <div id="contents">
 <h3>１０２．メンバー詳細とカスタムノード</h3>
-　メインメニューから「メンバー管理（カスタムノード）」を選ぶと「メンバー一覧（カスタムノード）」が出て、詳細ページに行くと
+　メインメニューから<strong>メンバー管理（カスタムノード）</strong>を選ぶと<strong>メンバー一覧（カスタムノード）</strong>が出て、詳細ページに行くと
 以下のような表示になります。
 <p>&nbsp;</p>
 <img src="img/0102a.png" width="100%" border="1"/>
 <p>図0102a</p>
 <p>&nbsp;</p>
 <h4>カスタムノード機能</h4>
-　このページは実際の動きは「メンバー詳細」と同じですが、アプローチの仕方が違います。<br>
+　このページは実際の動きは<strong>メンバー詳細</strong>と同じですが、アプローチの仕方が違います。<br>
 　まずは、ソースコードです。
 <div class="box1">
 <pre>
@@ -258,7 +258,7 @@ END_BLOCK;
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
-	@brief	メンバーIDの取得(新規の場合は「新規」)
+	@brief	メンバーIDの取得(新規の場合は<strong>新規</strong>)
 	@return	メンバーID
 	*/
 	//--------------------------------------------------------------------------------------
@@ -431,12 +431,240 @@ $page_obj->display();
 ?>
 </pre>
 </div>
-
-
+　このように、<strong>好きな果物チェックボックスの取得（get_fruits_match_check関数）</strong>や<strong>メンバーコメントの取得（get_member_comment関数）</strong>はあるのですが、<strong>住所</strong>の<strong>名前や都道府県や市町郡村以下</strong>はありません。<br>
+　実は、この部分は<strong>カスタムノード</strong>として、別に定義されています。<br>
+　定義されている部分は、<strong>common/contents_nodes.php</strong>内で、<strong>caddressクラス</strong>として定義されています。<br>
+　以下がそのソースです。
 <div class="box1">
 <pre>
+//--------------------------------------------------------------------------------------
+///	住所ノード
+//--------------------------------------------------------------------------------------
+class caddress extends cnode {
+	public $param_arr;
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	コンストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __construct($param_arr) {
+		$this->param_arr = $param_arr;
+		//親クラスのコンストラクタを呼ぶ
+		parent::__construct();
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	パラメータのチェック
+	@return	なし（エラーの場合はエラーフラグを立てる）
+	*/
+	//--------------------------------------------------------------------------------------
+	public function paramchk(){
+		global $err_array;
+		global $err_flag;
+		if($this->param_arr['cntl_header_name'] == 'par' && $_POST['member_minor'] == 0 ){
+			//保護者は未成年の時だけ必須
+			return;
+		}
+		/// 名前の存在と空白チェック
+		if(cutil_ex::chkset_err_field($err_array,
+			"{$this->param_arr['cntl_header_name']}_name",
+			"{$this->param_arr['head']}名",'isset_nl')){
+			$err_flag = 1;
+		}
+		/// 都道府県チェック
+		if(cutil_ex::chkset_err_field($err_array,
+			"{$this->param_arr['cntl_header_name']}_prefecture_id",
+			"{$this->param_arr['head']}都道府県",'isset_num_range',1,47)){
+			$err_flag = 1;
+		}
+		/// 住所の存在と空白チェック
+		if(cutil_ex::chkset_err_field($err_array,
+			"{$this->param_arr['cntl_header_name']}_address",
+			"{$this->param_arr['head']}市区郡町村以下",'isset_nl')){
+			$err_flag = 1;
+		}
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  POST変数のデフォルト値をセット
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function post_default(){
+		cutil::post_default("{$this->param_arr['cntl_header_name']}_prefecture_id",0);
+		cutil::post_default("{$this->param_arr['cntl_header_name']}_name",'');
+		cutil::post_default("{$this->param_arr['cntl_header_name']}_address",'');
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	名前コントロールの取得
+	@return	名前コントロール
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_name(){
+		global $err_array;
+		$ret_str = '';
+		$tgt = new ctextbox("{$this->param_arr['cntl_header_name']}_name",
+				$_POST["{$this->param_arr['cntl_header_name']}_name"],'size="70"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array["{$this->param_arr['cntl_header_name']}_name"])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array["{$this->param_arr['cntl_header_name']}_name"]) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	都道府県プルダウンの取得
+	@return	都道府県プルダウン文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_prefecture_select(){
+		global $err_array;
+		//都道府県の一覧を取得
+		$prefecture_obj = new cprefecture();
+		$allcount = $prefecture_obj->get_all_count(false);
+		$prefecture_rows = $prefecture_obj->get_all(false,0,$allcount);
+		$tgt = new cselect("{$this->param_arr['cntl_header_name']}_prefecture_id");
+		$tgt->add(0,'選択してください',$_POST["{$this->param_arr['cntl_header_name']}_prefecture_id"] == 0);
+		foreach($prefecture_rows as $key => $val){
+			$tgt->add($val['prefecture_id'],$val['prefecture_name'],
+			$val['prefecture_id'] == $_POST["{$this->param_arr['cntl_header_name']}_prefecture_id"]);
+		}
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array["{$this->param_arr['cntl_header_name']}_prefecture_id"])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array["{$this->param_arr['cntl_header_name']}_prefecture_id"]) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	住所の取得
+	@return	住所文字列
+	*/
+	//--------------------------------------------------------------------------------------
+	function get_address(){
+		global $err_array;
+		$tgt = new ctextbox("{$this->param_arr['cntl_header_name']}_address",
+				$_POST["{$this->param_arr['cntl_header_name']}_address"],'size="80"');
+		$ret_str = $tgt->get($_POST['func'] == 'conf');
+		if(isset($err_array["{$this->param_arr['cntl_header_name']}_address"])){
+			$ret_str .=  '&lt;br />&lt;span class="text-danger">' 
+			. cutil::ret2br($err_array["{$this->param_arr['cntl_header_name']}_address"]) 
+			. '&lt;/span>';
+		}
+		return $ret_str;
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief  表示(継承して使用)
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function display(){
+		$name_str = "{$this->param_arr['head']}名";
+		$prefec_str = "{$this->param_arr['head']}都道府県";
+		$address_str = "{$this->param_arr['head']}市区郡町村以下";
+//PHPブロック終了
+?>
+&lt;tr>
+&lt;th class="text-center">&lt;?= $name_str ?>&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_name(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">&lt;?= $prefec_str ?>&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_prefecture_select(); ?>&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;th class="text-center">&lt;?= $address_str ?>&lt;/th>
+&lt;td width="70%">&lt;?= $this->get_address(); ?>&lt;/td>
+&lt;/tr>
+&lt;?php 
+//PHPブロック再開
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	デストラクタ
+	*/
+	//--------------------------------------------------------------------------------------
+	public function __destruct(){
+		//親クラスのデストラクタを呼ぶ
+		parent::__destruct();
+	}
+}
 </pre>
 </div>
+　このクラスはコンストラクタ引数に<strong>$param_arr配列</strong>を取り、そのメンバとして<strong>コントロール名のヘッダ部</strong>や<strong>その説明語</strong>を渡しています。<br>
+　この振り分けにより、使いまわし、<strong>それぞれ別のコントロール名としてPOSTできる</strong>ようになります。<br>
+　そして実装は<strong>本体であるcmain_nodeクラス</strong>に記述します。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	構築時の処理(継承して使用)
+	@return	なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function create(){
+		$param_arr = array(
+			'cntl_header_name' => 'member',
+			'head' => 'メンバー'
+		);
+		$this->member_address = cutil::create('caddress',$param_arr);
+		$this->add_child($this->member_address);
+		$param_arr = array(
+			'cntl_header_name' => 'par',
+			'head' => '保護者'
+		);
+		$this->par_address = cutil::create('caddress',$param_arr);
+		$this->add_child($this->par_address);
+		parent::create();
+	}
+</pre>
+</div>
+　こう記述することにより<strong>$this->member_addressにメンバーの住所情報</strong>、そして<strong>$this->par_addressに保護者の住所情報</strong>が構築されます。<br>
+　また、最後の<strong>parent::create();</strong>は重要です。この記述により<strong>add_child</strong>したクラスの<strong>create関数</strong>が呼ばれます。<br>
+　また、パラメータのチェックは以下のように記述し、<strong>caddressクラス</strong>の処理を任せています。
+<div class="box1">
+<pre>
+	//--------------------------------------------------------------------------------------
+	/*!
+	@brief	パラメータのチェック
+	@return	エラーの場合はfalseを返す
+	*/
+	//--------------------------------------------------------------------------------------
+	function paramchk(){
+		global $err_array;
+		global $err_flag;
+		parent::paramchk();
+	}
+</pre>
+</div>
+　最後に<strong>display関数</strong>ですが
+<div class="box1">
+<pre>
+&lt;?php $this->member_address->display(); ?>
+</pre>
+</div>
+や
+<div class="box1">
+<pre>
+&lt;?php $this->par_address->display(); ?>
+</pre>
+</div>
+　と書くことにより、<strong>caddressクラスのdisplay関数</strong>が呼ばれるようになります。
 
 </div>
 <!-- /コンテンツ　-->
