@@ -1,12 +1,17 @@
 <?php
 /*!
-@file index.php
-@brief メインメニュー
+@file hinagata.php
+@brief ページ作成の雛形ファイル
 @copyright Copyright (c) 2024 Yamanoi Yasushi.
 */
 
 //ライブラリをインクルード
 require_once("common/libs.php");
+
+$err_array = array();
+$err_flag = 0;
+$page_obj = null;
+
 
 //--------------------------------------------------------------------------------------
 ///	本体ノード
@@ -23,6 +28,14 @@ class cmain_node extends cnode {
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
+	@brief  本体実行（表示前処理）
+	@return なし
+	*/
+	//--------------------------------------------------------------------------------------
+	public function execute(){
+	}
+	//--------------------------------------------------------------------------------------
+	/*!
 	@brief	構築時の処理(継承して使用)
 	@return	なし
 	*/
@@ -36,38 +49,16 @@ class cmain_node extends cnode {
 	*/
 	//--------------------------------------------------------------------------------------
 	public function display(){
-
-		$echo_str = <<< END_BLOCK
-
-
+//PHPブロック終了
+?>
 <!-- コンテンツ　-->
 <div class="contents">
-<h5><strong>メインメニュー</strong></h5>
-<table class="table table-bordered">
-<thead>
-<tr>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="prefecture_list.php" class="nav-link link-success">都道府県管理</a></td>
-</tr>
-<tr>
-<td><a href="member_list.php" class="nav-link link-success">メンバー管理</a></td>
-</tr>
-<tr>
-<td><a href="member_list_custom.php" class="nav-link link-success">メンバー管理（カスタムノード）</a></td>
-</tr>
-<tr>
-<td><a href="hinagata.php" class="nav-link link-success">雛形ファイル</a></td>
-</tr>
-</tbody>
-</table>
+<h5><strong>雛形ファイル</strong></h5>
+※このファイルは雛形ファイルです。
 </div>
 <!-- /コンテンツ　-->
-END_BLOCK;
-		echo $echo_str;
-
+<?php 
+//PHPブロック再開
 	}
 	//--------------------------------------------------------------------------------------
 	/*!
@@ -85,13 +76,14 @@ $page_obj = new cnode();
 //ヘッダ追加
 $page_obj->add_child(cutil::create('cheader'));
 //本体追加
-$page_obj->add_child(cutil::create('cmain_node'));
+$page_obj->add_child($main_obj = cutil::create('cmain_node'));
 //フッタ追加
 $page_obj->add_child(cutil::create('cfooter'));
 //構築時処理
 $page_obj->create();
+//本体実行（表示前処理）
+$main_obj->execute();
 //ページ全体を表示
 $page_obj->display();
-
 
 ?>

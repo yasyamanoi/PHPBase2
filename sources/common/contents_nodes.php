@@ -56,6 +56,7 @@ class cheader extends cnode {
 <li class="nav-item"><a href="prefecture_list.php" class="nav-link link-success">都道府県管理</a></li>
 <li class="nav-item"><a href="member_list.php" class="nav-link link-success">メンバー管理</a></li>
 <li class="nav-item"><a href="member_list_custom.php" class="nav-link link-success">メンバー管理（カスタムノード）</a></li>
+<li class="nav-item"><a href="hinagata.php" class="nav-link link-success">雛形ファイル</a></li>
 </ul>
 </header>
 END_BLOCK;
