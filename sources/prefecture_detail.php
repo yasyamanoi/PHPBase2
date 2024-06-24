@@ -113,8 +113,9 @@ class cmain_node extends cnode {
 					$_POST['func'] = 'edit';
 				}
 				else{
-					//データの取得に失敗したので新規の入力フォーム
-					$_POST['func'] = 'new';
+					//データの取得に失敗したので
+					//新規ページにリダイレクト
+					cutil::redirect_exit($_SERVER['PHP_SELF']);
 				}
 			}
 			else{
